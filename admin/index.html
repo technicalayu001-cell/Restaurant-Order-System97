@@ -20,8 +20,18 @@
     .header {
       background: #1f7a4d;
       color: white;
-      padding: 22px;
+      padding: 18px;
       text-align: center;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 23px;
+    }
+
+    .header p {
+      margin: 6px 0 0;
+      font-size: 13px;
     }
 
     .container {
@@ -32,36 +42,47 @@
 
     .card {
       background: white;
-      padding: 24px;
+      padding: 22px;
       border-radius: 15px;
       box-shadow: 0 3px 15px rgba(0,0,0,.1);
+      margin-bottom: 15px;
     }
 
-    h2 {
-      text-align: center;
+    h2, h3 {
       margin-top: 0;
     }
 
-    input {
+    input, textarea, select {
       width: 100%;
-      padding: 13px;
-      margin: 8px 0;
+      padding: 12px;
+      margin: 7px 0;
       border: 1px solid #ddd;
       border-radius: 8px;
       font-size: 15px;
+      background: white;
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
     }
 
     button {
       width: 100%;
-      padding: 13px;
+      padding: 12px;
       border: none;
       border-radius: 8px;
       background: #1f7a4d;
       color: white;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: bold;
-      margin-top: 10px;
+      margin-top: 8px;
       cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
     }
 
     .secondary {
@@ -69,31 +90,97 @@
       color: #222;
     }
 
+    .danger {
+      background: #c0392b;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
     .message {
       margin-top: 12px;
       text-align: center;
       font-size: 14px;
+      min-height: 20px;
     }
 
-    .hidden {
-      display: none;
-    }
-
+    /* DASHBOARD */
     .dashboard {
-      max-width: 800px;
+      max-width: 900px;
       margin: 20px auto;
       padding: 16px;
     }
 
     .welcome-card {
       background: white;
-      padding: 20px;
+      padding: 18px;
       border-radius: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
       margin-bottom: 15px;
     }
 
-    .logout-btn {
-      background: #c0392b;
+    .nav-tabs button {
+      width: auto;
+      white-space: nowrap;
+      margin: 0;
+      padding: 10px 14px;
+      background: white;
+      color: #222;
+      border: 1px solid #ddd;
+    }
+
+    .nav-tabs button.active {
+      background: #1f7a4d;
+      color: white;
+      border-color: #1f7a4d;
+    }
+
+    .menu-item-admin {
+      background: #fff;
+      border: 1px solid #eee;
+      padding: 14px;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    .menu-item-admin h4 {
+      margin: 0 0 5px;
+    }
+
+    .menu-meta {
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .menu-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .menu-actions button {
+      width: auto;
+      margin: 0;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+
+    .available {
+      color: #1f7a4d;
+      font-weight: bold;
+    }
+
+    .unavailable {
+      color: #c0392b;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -105,15 +192,16 @@
   <p>Manage your restaurant</p>
 </div>
 
-<!-- LOGIN / SIGNUP -->
+
+<!-- ================= AUTH ================= -->
+
 <div class="container" id="authSection">
 
+  <!-- LOGIN -->
   <div class="card" id="loginCard">
-
     <h2>Admin Login</h2>
 
     <input type="email" id="loginEmail" placeholder="Email address">
-
     <input type="password" id="loginPassword" placeholder="Password">
 
     <button onclick="login()">Login</button>
@@ -123,25 +211,18 @@
     </button>
 
     <div class="message" id="loginMessage"></div>
-
   </div>
 
 
   <!-- SIGNUP -->
   <div class="card hidden" id="signupCard">
-
     <h2>Create Restaurant Account</h2>
 
     <input type="text" id="restaurantName" placeholder="Restaurant Name">
-
     <input type="text" id="ownerName" placeholder="Owner Name">
-
     <input type="tel" id="phone" placeholder="Phone Number">
-
     <input type="text" id="address" placeholder="Restaurant Address">
-
     <input type="email" id="signupEmail" placeholder="Email address">
-
     <input type="password" id="signupPassword" placeholder="Create Password">
 
     <button onclick="signup()">Create Account</button>
@@ -151,13 +232,13 @@
     </button>
 
     <div class="message" id="signupMessage"></div>
-
   </div>
 
 </div>
 
 
-<!-- DASHBOARD -->
+<!-- ================= DASHBOARD ================= -->
+
 <div class="dashboard hidden" id="dashboardSection">
 
   <div class="welcome-card">
@@ -165,26 +246,71 @@
     <p id="ownerInfo"></p>
   </div>
 
-  <div class="welcome-card">
-    <h3>🚀 Your Restaurant Dashboard</h3>
-    <p>Next, we will add Live Orders, Menu, Tables, Billing and QR Codes here.</p>
+  <div class="nav-tabs">
+    <button class="active" onclick="showTab('home', this)">🏠 Dashboard</button>
+    <button onclick="showTab('menu', this)">🍔 Menu</button>
   </div>
 
-  <button class="logout-btn" onclick="logout()">Logout</button>
+
+  <!-- HOME TAB -->
+  <div id="homeTab" class="tab-content">
+    <div class="welcome-card">
+      <h3>🚀 Restaurant Dashboard</h3>
+      <p>Your restaurant account is connected successfully.</p>
+      <p>Next features: Orders, Tables & QR, Billing and Live Updates.</p>
+    </div>
+  </div>
+
+
+  <!-- MENU TAB -->
+  <div id="menuTab" class="tab-content hidden">
+
+    <div class="welcome-card">
+      <h3>➕ Add Menu Item</h3>
+
+      <input type="text" id="menuName" placeholder="Food Item Name">
+
+      <textarea id="menuDescription"
+        placeholder="Description (optional)"></textarea>
+
+      <input type="number" id="menuPrice"
+        placeholder="Price (₹)" min="0" step="0.01">
+
+      <input type="text" id="menuCategory"
+        placeholder="Category (Example: Snacks, Main Course)">
+
+      <button onclick="addMenuItem()">➕ Add to Menu</button>
+
+      <div class="message" id="menuMessage"></div>
+    </div>
+
+
+    <div class="welcome-card">
+      <h3>🍽️ Your Menu</h3>
+      <div id="adminMenuList">
+        Loading menu...
+      </div>
+    </div>
+
+  </div>
+
+
+  <button class="danger" onclick="logout()">Logout</button>
 
 </div>
 
+
+<!-- ================= SUPABASE ================= -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 
-  // ======================================
-  // SUPABASE CONNECTION
-  // ======================================
+  // =====================================
+  // SUPABASE CONFIG
+  // =====================================
 
   const SUPABASE_URL = "https://yravmnkdagtafdazguvl.supabase.co";
-
   const SUPABASE_ANON_KEY = "sb_publishable_EAWWJe0aicdmnT1HQopX_A_nEUkKbyN";
 
   const supabaseClient = window.supabase.createClient(
@@ -193,9 +319,17 @@
   );
 
 
-  // ======================================
-  // SHOW LOGIN / SIGNUP
-  // ======================================
+  // =====================================
+  // APP DATA
+  // =====================================
+
+  let currentUser = null;
+  let currentRestaurant = null;
+
+
+  // =====================================
+  // AUTH SCREEN
+  // =====================================
 
   function showSignup() {
     document.getElementById("loginCard").classList.add("hidden");
@@ -208,9 +342,9 @@
   }
 
 
-  // ======================================
+  // =====================================
   // SIGNUP
-  // ======================================
+  // =====================================
 
   async function signup() {
 
@@ -240,8 +374,6 @@
       return;
     }
 
-    // If email confirmation is enabled, user may not have
-    // an active session immediately.
     const user = data.user;
 
     if (!user) {
@@ -249,7 +381,6 @@
       return;
     }
 
-    // Save restaurant profile
     const { error: restaurantError } = await supabaseClient
       .from("restaurants")
       .insert({
@@ -261,23 +392,20 @@
       });
 
     if (restaurantError) {
-      console.log(restaurantError);
       message.textContent =
         "Account created, but restaurant profile could not be saved: " +
         restaurantError.message;
       return;
     }
 
-    message.textContent =
-      "Account created successfully! Please verify your email, then login.";
-
-    setTimeout(showLogin, 2500);
+    message.textContent = "Account created successfully! You can now login.";
+    setTimeout(showLogin, 2000);
   }
 
 
-  // ======================================
+  // =====================================
   // LOGIN
-  // ======================================
+  // =====================================
 
   async function login() {
 
@@ -285,12 +413,17 @@
     const password = document.getElementById("loginPassword").value;
     const message = document.getElementById("loginMessage");
 
+    if (!email || !password) {
+      message.textContent = "Please enter email and password.";
+      return;
+    }
+
     message.textContent = "Logging in...";
 
     const { data, error } =
       await supabaseClient.auth.signInWithPassword({
-        email: email,
-        password: password
+        email,
+        password
       });
 
     if (error) {
@@ -302,11 +435,13 @@
   }
 
 
-  // ======================================
+  // =====================================
   // LOAD DASHBOARD
-  // ======================================
+  // =====================================
 
   async function loadDashboard(user) {
+
+    currentUser = user;
 
     const { data: restaurant, error } = await supabaseClient
       .from("restaurants")
@@ -319,6 +454,8 @@
       return;
     }
 
+    currentRestaurant = restaurant;
+
     document.getElementById("authSection").classList.add("hidden");
     document.getElementById("dashboardSection").classList.remove("hidden");
 
@@ -330,9 +467,216 @@
   }
 
 
-  // ======================================
-  // CHECK EXISTING LOGIN
-  // ======================================
+  // =====================================
+  // TAB SYSTEM
+  // =====================================
+
+  function showTab(tabName, button) {
+
+    document.querySelectorAll(".tab-content")
+      .forEach(tab => tab.classList.add("hidden"));
+
+    document.querySelectorAll(".nav-tabs button")
+      .forEach(btn => btn.classList.remove("active"));
+
+    document.getElementById(tabName + "Tab")
+      .classList.remove("hidden");
+
+    button.classList.add("active");
+
+    if (tabName === "menu") {
+      loadMenuItems();
+    }
+  }
+
+
+  // =====================================
+  // ADD MENU ITEM
+  // =====================================
+
+  async function addMenuItem() {
+
+    if (!currentRestaurant) {
+      alert("Restaurant not loaded. Please login again.");
+      return;
+    }
+
+    const name = document.getElementById("menuName").value.trim();
+    const description =
+      document.getElementById("menuDescription").value.trim();
+
+    const price =
+      Number(document.getElementById("menuPrice").value);
+
+    const category =
+      document.getElementById("menuCategory").value.trim() || "General";
+
+    const message = document.getElementById("menuMessage");
+
+    if (!name || !price || price < 0) {
+      message.textContent = "Please enter a valid item name and price.";
+      return;
+    }
+
+    message.textContent = "Adding item...";
+
+    const { error } = await supabaseClient
+      .from("menu_items")
+      .insert({
+        restaurant_id: currentRestaurant.id,
+        name,
+        description,
+        price,
+        category,
+        is_available: true
+      });
+
+    if (error) {
+      console.log(error);
+      message.textContent = "Error: " + error.message;
+      return;
+    }
+
+    message.textContent = "✅ Menu item added successfully!";
+
+    document.getElementById("menuName").value = "";
+    document.getElementById("menuDescription").value = "";
+    document.getElementById("menuPrice").value = "";
+    document.getElementById("menuCategory").value = "";
+
+    await loadMenuItems();
+  }
+
+
+  // =====================================
+  // LOAD MENU ITEMS
+  // =====================================
+
+  async function loadMenuItems() {
+
+    if (!currentRestaurant) return;
+
+    const list = document.getElementById("adminMenuList");
+
+    list.innerHTML = "Loading menu...";
+
+    const { data, error } = await supabaseClient
+      .from("menu_items")
+      .select("*")
+      .eq("restaurant_id", currentRestaurant.id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      list.innerHTML = "Error loading menu: " + error.message;
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      list.innerHTML = "<p>No menu items yet.</p>";
+      return;
+    }
+
+    list.innerHTML = "";
+
+    data.forEach(item => {
+
+      const statusClass =
+        item.is_available ? "available" : "unavailable";
+
+      const statusText =
+        item.is_available ? "Available" : "Unavailable";
+
+      list.innerHTML += `
+        <div class="menu-item-admin">
+          <h4>${escapeHtml(item.name)}</h4>
+
+          <div class="menu-meta">
+            ${escapeHtml(item.category || "General")} • ₹${item.price}
+          </div>
+
+          <div class="${statusClass}">
+            ${statusText}
+          </div>
+
+          <div class="menu-actions">
+            <button onclick="toggleMenuAvailability('${item.id}', ${item.is_available})">
+              ${item.is_available ? "Make Unavailable" : "Make Available"}
+            </button>
+
+            <button class="danger" onclick="deleteMenuItem('${item.id}')">
+              Delete
+            </button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+
+  // =====================================
+  // TOGGLE AVAILABILITY
+  // =====================================
+
+  async function toggleMenuAvailability(itemId, currentStatus) {
+
+    const { error } = await supabaseClient
+      .from("menu_items")
+      .update({
+        is_available: !currentStatus
+      })
+      .eq("id", itemId)
+      .eq("restaurant_id", currentRestaurant.id);
+
+    if (error) {
+      alert("Error: " + error.message);
+      return;
+    }
+
+    await loadMenuItems();
+  }
+
+
+  // =====================================
+  // DELETE MENU ITEM
+  // =====================================
+
+  async function deleteMenuItem(itemId) {
+
+    const confirmed = confirm(
+      "Are you sure you want to delete this menu item?"
+    );
+
+    if (!confirmed) return;
+
+    const { error } = await supabaseClient
+      .from("menu_items")
+      .delete()
+      .eq("id", itemId)
+      .eq("restaurant_id", currentRestaurant.id);
+
+    if (error) {
+      alert("Error: " + error.message);
+      return;
+    }
+
+    await loadMenuItems();
+  }
+
+
+  // =====================================
+  // SAFE TEXT DISPLAY
+  // =====================================
+
+  function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text || "";
+    return div.innerHTML;
+  }
+
+
+  // =====================================
+  // CHECK EXISTING SESSION
+  // =====================================
 
   async function checkSession() {
 
@@ -344,19 +688,26 @@
   }
 
 
-  // ======================================
+  // =====================================
   // LOGOUT
-  // ======================================
+  // =====================================
 
   async function logout() {
 
     await supabaseClient.auth.signOut();
 
-    document.getElementById("dashboardSection").classList.add("hidden");
-    document.getElementById("authSection").classList.remove("hidden");
+    currentUser = null;
+    currentRestaurant = null;
+
+    document.getElementById("dashboardSection")
+      .classList.add("hidden");
+
+    document.getElementById("authSection")
+      .classList.remove("hidden");
   }
 
 
+  // Start
   checkSession();
 
 </script>
