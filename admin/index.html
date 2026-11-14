@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restaurant Admin</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    .header {
+      background: #1f7a4d;
+      color: white;
+      padding: 22px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 450px;
+      margin: 30px auto;
+      padding: 16px;
+    }
+
+    .card {
+      background: white;
+      padding: 24px;
+      border-radius: 15px;
+      box-shadow: 0 3px 15px rgba(0,0,0,.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 0;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      margin: 8px 0;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      background: #1f7a4d;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    .secondary {
+      background: #e9ecef;
+      color: #222;
+    }
+
+    .message {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .dashboard {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 16px;
+    }
+
+    .welcome-card {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 15px;
+    }
+
+    .logout-btn {
+      background: #c0392b;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>🍽️ Restaurant Admin</h1>
+  <p>Manage your restaurant</p>
+</div>
+
+<!-- LOGIN / SIGNUP -->
+<div class="container" id="authSection">
+
+  <div class="card" id="loginCard">
+
+    <h2>Admin Login</h2>
+
+    <input type="email" id="loginEmail" placeholder="Email address">
+
+    <input type="password" id="loginPassword" placeholder="Password">
+
+    <button onclick="login()">Login</button>
+
+    <button class="secondary" onclick="showSignup()">
+      Create New Restaurant Account
+    </button>
+
+    <div class="message" id="loginMessage"></div>
+
+  </div>
+
+
+  <!-- SIGNUP -->
+  <div class="card hidden" id="signupCard">
+
+    <h2>Create Restaurant Account</h2>
+
+    <input type="text" id="restaurantName" placeholder="Restaurant Name">
+
+    <input type="text" id="ownerName" placeholder="Owner Name">
+
+    <input type="tel" id="phone" placeholder="Phone Number">
+
+    <input type="text" id="address" placeholder="Restaurant Address">
+
+    <input type="email" id="signupEmail" placeholder="Email address">
+
+    <input type="password" id="signupPassword" placeholder="Create Password">
+
+    <button onclick="signup()">Create Account</button>
+
+    <button class="secondary" onclick="showLogin()">
+      Already have an account? Login
+    </button>
+
+    <div class="message" id="signupMessage"></div>
+
+  </div>
+
+</div>
+
+
+<!-- DASHBOARD -->
+<div class="dashboard hidden" id="dashboardSection">
+
+  <div class="welcome-card">
+    <h2 id="welcomeRestaurant">Welcome!</h2>
+    <p id="ownerInfo"></p>
+  </div>
+
+  <div class="welcome-card">
+    <h3>🚀 Your Restaurant Dashboard</h3>
+    <p>Next, we will add Live Orders, Menu, Tables, Billing and QR Codes here.</p>
+  </div>
+
+  <button class="logout-btn" onclick="logout()">Logout</button>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+  // ======================================
+  // SUPABASE CONNECTION
+  // ======================================
+
+  const SUPABASE_URL = "https://yravmnkdagtafdazguvl.supabase.co";
+
+  const SUPABASE_ANON_KEY = "sb_publishable_EAWWJe0aicdmnT1HQopX_A_nEUkKbyN";
+
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+
+  // ======================================
+  // SHOW LOGIN / SIGNUP
+  // ======================================
+
+  function showSignup() {
+    document.getElementById("loginCard").classList.add("hidden");
+    document.getElementById("signupCard").classList.remove("hidden");
+  }
+
+  function showLogin() {
+    document.getElementById("signupCard").classList.add("hidden");
+    document.getElementById("loginCard").classList.remove("hidden");
+  }
+
+
+  // ======================================
+  // SIGNUP
+  // ======================================
+
+  async function signup() {
+
+    const restaurantName = document.getElementById("restaurantName").value.trim();
+    const ownerName = document.getElementById("ownerName").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const address = document.getElementById("address").value.trim();
+    const email = document.getElementById("signupEmail").value.trim();
+    const password = document.getElementById("signupPassword").value;
+
+    const message = document.getElementById("signupMessage");
+
+    if (!restaurantName || !email || !password) {
+      message.textContent = "Please fill Restaurant Name, Email and Password.";
+      return;
+    }
+
+    message.textContent = "Creating account...";
+
+    const { data, error } = await supabaseClient.auth.signUp({
+      email: email,
+      password: password
+    });
+
+    if (error) {
+      message.textContent = error.message;
+      return;
+    }
+
+    // If email confirmation is enabled, user may not have
+    // an active session immediately.
+    const user = data.user;
+
+    if (!user) {
+      message.textContent = "Account could not be created.";
+      return;
+    }
+
+    // Save restaurant profile
+    const { error: restaurantError } = await supabaseClient
+      .from("restaurants")
+      .insert({
+        name: restaurantName,
+        owner_id: user.id,
+        owner_name: ownerName,
+        phone: phone,
+        address: address
+      });
+
+    if (restaurantError) {
+      console.log(restaurantError);
+      message.textContent =
+        "Account created, but restaurant profile could not be saved: " +
+        restaurantError.message;
+      return;
+    }
+
+    message.textContent =
+      "Account created successfully! Please verify your email, then login.";
+
+    setTimeout(showLogin, 2500);
+  }
+
+
+  // ======================================
+  // LOGIN
+  // ======================================
+
+  async function login() {
+
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    const message = document.getElementById("loginMessage");
+
+    message.textContent = "Logging in...";
+
+    const { data, error } =
+      await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+
+    if (error) {
+      message.textContent = error.message;
+      return;
+    }
+
+    await loadDashboard(data.user);
+  }
+
+
+  // ======================================
+  // LOAD DASHBOARD
+  // ======================================
+
+  async function loadDashboard(user) {
+
+    const { data: restaurant, error } = await supabaseClient
+      .from("restaurants")
+      .select("*")
+      .eq("owner_id", user.id)
+      .single();
+
+    if (error || !restaurant) {
+      alert("Restaurant profile not found.");
+      return;
+    }
+
+    document.getElementById("authSection").classList.add("hidden");
+    document.getElementById("dashboardSection").classList.remove("hidden");
+
+    document.getElementById("welcomeRestaurant").textContent =
+      "Welcome to " + restaurant.name;
+
+    document.getElementById("ownerInfo").textContent =
+      "Owner: " + (restaurant.owner_name || "Restaurant Owner");
+  }
+
+
+  // ======================================
+  // CHECK EXISTING LOGIN
+  // ======================================
+
+  async function checkSession() {
+
+    const { data } = await supabaseClient.auth.getSession();
+
+    if (data.session) {
+      await loadDashboard(data.session.user);
+    }
+  }
+
+
+  // ======================================
+  // LOGOUT
+  // ======================================
+
+  async function logout() {
+
+    await supabaseClient.auth.signOut();
+
+    document.getElementById("dashboardSection").classList.add("hidden");
+    document.getElementById("authSection").classList.remove("hidden");
+  }
+
+
+  checkSession();
+
+</script>
+
+</body>
+</html>
