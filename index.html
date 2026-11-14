@@ -1,1 +1,559 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Restaurant Order</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f5f5f5;
+      color: #222;
+      padding-bottom: 100px;
+    }
+
+    header {
+      background: #1f7a4d;
+      color: white;
+      padding: 22px 16px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 24px;
+    }
+
+    .table-info {
+      margin-top: 8px;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      padding: 16px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      margin: 15px 0;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 30px;
+      color: #666;
+    }
+
+    .menu-item {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .menu-info h3 {
+      margin-bottom: 6px;
+    }
+
+    .menu-info p {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .price {
+      color: #1f7a4d;
+      font-weight: bold;
+      font-size: 17px;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-weight: bold;
+    }
+
+    .add-btn {
+      background: #1f7a4d;
+      color: white;
+      height: fit-content;
+    }
+
+    .cart-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      box-shadow: 0 -2px 12px rgba(0,0,0,0.15);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .cart-count {
+      font-size: 15px;
+    }
+
+    .cart-total {
+      font-weight: bold;
+      color: #1f7a4d;
+    }
+
+    .cart-btn {
+      background: #1f7a4d;
+      color: white;
+    }
+
+    .cart-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 20;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .cart-content {
+      background: white;
+      max-width: 600px;
+      margin: 30px auto;
+      border-radius: 15px;
+      padding: 20px;
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .quantity-controls button {
+      background: #eee;
+      padding: 5px 10px;
+      margin: 0 3px;
+    }
+
+    .place-order {
+      width: 100%;
+      margin-top: 20px;
+      background: #1f7a4d;
+      color: white;
+      font-size: 16px;
+    }
+
+    .close-btn {
+      background: #ddd;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    .error {
+      background: #ffe5e5;
+      color: #b00020;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1 id="restaurantName">Restaurant</h1>
+  <div class="table-info" id="tableInfo">
+    Loading table information...
+  </div>
+</header>
+
+<div class="container">
+
+  <h2 class="section-title">🍽️ Our Menu</h2>
+
+  <div id="menuList">
+    <div class="loading">Loading menu...</div>
+  </div>
+
+</div>
+
+<div class="cart-bar">
+  <div>
+    <div class="cart-count">
+      🛒 <span id="cartCount">0</span> Items
+    </div>
+    <div class="cart-total">
+      ₹<span id="cartTotal">0</span>
+    </div>
+  </div>
+
+  <button class="cart-btn" onclick="openCart()">
+    View Cart
+  </button>
+</div>
+
+<div class="cart-modal" id="cartModal">
+  <div class="cart-content">
+
+    <h2>🛒 Your Cart</h2>
+
+    <div id="cartItems"></div>
+
+    <h3 style="margin-top:15px;">
+      Total: ₹<span id="modalTotal">0</span>
+    </h3>
+
+    <button class="place-order" onclick="placeOrder()">
+      📦 Place Order
+    </button>
+
+    <button class="close-btn" onclick="closeCart()">
+      Close
+    </button>
+
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+  // ==========================================
+  // SUPABASE CONNECTION
+  // ==========================================
+
+  const SUPABASE_URL = "PASTE_YOUR_SUPABASE_URL_HERE";
+
+  const SUPABASE_ANON_KEY = "PASTE_YOUR_SUPABASE_ANON_KEY_HERE";
+
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+
+  // ==========================================
+  // GET RESTAURANT & TABLE FROM QR LINK
+  // Example:
+  // ?restaurant=RESTAURANT_ID&table=7
+  // ==========================================
+
+  const params = new URLSearchParams(window.location.search);
+
+  const restaurantId = params.get("restaurant");
+  const tableNumber = params.get("table");
+
+  let menuItems = [];
+  let cart = [];
+
+
+  // ==========================================
+  // START WEBSITE
+  // ==========================================
+
+  async function startApp() {
+
+    if (!restaurantId || !tableNumber) {
+
+      document.getElementById("tableInfo").innerHTML =
+        "⚠️ Invalid QR Code";
+
+      document.getElementById("menuList").innerHTML =
+        `<div class="error">
+          Please scan a valid restaurant table QR code.
+        </div>`;
+
+      return;
+    }
+
+    document.getElementById("tableInfo").innerHTML =
+      "🪑 Table " + tableNumber;
+
+    await loadRestaurant();
+    await loadMenu();
+  }
+
+
+  // ==========================================
+  // LOAD RESTAURANT
+  // ==========================================
+
+  async function loadRestaurant() {
+
+    const { data, error } = await supabaseClient
+      .from("restaurants")
+      .select("name")
+      .eq("id", restaurantId)
+      .single();
+
+    if (error) {
+      console.log(error);
+      return;
+    }
+
+    if (data) {
+      document.getElementById("restaurantName").textContent =
+        data.name;
+    }
+  }
+
+
+  // ==========================================
+  // LOAD MENU
+  // ==========================================
+
+  async function loadMenu() {
+
+    const { data, error } = await supabaseClient
+      .from("menu_items")
+      .select("*")
+      .eq("restaurant_id", restaurantId)
+      .eq("is_available", true)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+
+      console.log(error);
+
+      document.getElementById("menuList").innerHTML =
+        `<div class="error">
+          Menu could not be loaded.
+        </div>`;
+
+      return;
+    }
+
+    menuItems = data || [];
+
+    const menuList = document.getElementById("menuList");
+
+    if (menuItems.length === 0) {
+
+      menuList.innerHTML =
+        `<div class="loading">
+          No menu items available yet.
+        </div>`;
+
+      return;
+    }
+
+    menuList.innerHTML = "";
+
+    menuItems.forEach(item => {
+
+      menuList.innerHTML += `
+        <div class="menu-item">
+
+          <div class="menu-info">
+            <h3>${item.name}</h3>
+            <p>${item.description || ""}</p>
+            <div class="price">₹${item.price}</div>
+          </div>
+
+          <button
+            class="add-btn"
+            onclick="addToCart('${item.id}')"
+          >
+            + Add
+          </button>
+
+        </div>
+      `;
+    });
+  }
+
+
+  // ==========================================
+  // CART
+  // ==========================================
+
+  function addToCart(itemId) {
+
+    const item = menuItems.find(
+      menu => menu.id === itemId
+    );
+
+    if (!item) return;
+
+    const existingItem = cart.find(
+      cartItem => cartItem.id === item.id
+    );
+
+    if (existingItem) {
+      existingItem.quantity++;
+    } else {
+      cart.push({
+        id: item.id,
+        name: item.name,
+        price: Number(item.price),
+        quantity: 1
+      });
+    }
+
+    updateCart();
+  }
+
+
+  function updateCart() {
+
+    const totalItems = cart.reduce(
+      (total, item) => total + item.quantity,
+      0
+    );
+
+    const totalPrice = cart.reduce(
+      (total, item) =>
+        total + (item.price * item.quantity),
+      0
+    );
+
+    document.getElementById("cartCount").textContent =
+      totalItems;
+
+    document.getElementById("cartTotal").textContent =
+      totalPrice.toFixed(2);
+  }
+
+
+  function openCart() {
+
+    document.getElementById("cartModal").style.display =
+      "block";
+
+    renderCart();
+  }
+
+
+  function closeCart() {
+
+    document.getElementById("cartModal").style.display =
+      "none";
+  }
+
+
+  function renderCart() {
+
+    const cartItems = document.getElementById("cartItems");
+
+    if (cart.length === 0) {
+
+      cartItems.innerHTML =
+        "<p style='margin-top:15px;'>Your cart is empty.</p>";
+
+      document.getElementById("modalTotal").textContent = "0";
+
+      return;
+    }
+
+    cartItems.innerHTML = "";
+
+    cart.forEach(item => {
+
+      cartItems.innerHTML += `
+        <div class="cart-item">
+
+          <div>
+            <strong>${item.name}</strong><br>
+            ₹${item.price} × ${item.quantity}
+          </div>
+
+          <div class="quantity-controls">
+            <button onclick="changeQuantity('${item.id}', -1)">
+              −
+            </button>
+
+            <span>${item.quantity}</span>
+
+            <button onclick="changeQuantity('${item.id}', 1)">
+              +
+            </button>
+          </div>
+
+        </div>
+      `;
+    });
+
+    const total = cart.reduce(
+      (sum, item) =>
+        sum + item.price * item.quantity,
+      0
+    );
+
+    document.getElementById("modalTotal").textContent =
+      total.toFixed(2);
+  }
+
+
+  function changeQuantity(itemId, change) {
+
+    const item = cart.find(
+      cartItem => cartItem.id === itemId
+    );
+
+    if (!item) return;
+
+    item.quantity += change;
+
+    if (item.quantity <= 0) {
+      cart = cart.filter(
+        cartItem => cartItem.id !== itemId
+      );
+    }
+
+    updateCart();
+    renderCart();
+  }
+
+
+  // ==========================================
+  // PLACE ORDER
+  // ==========================================
+
+  async function placeOrder() {
+
+    if (cart.length === 0) {
+      alert("Please add items to your cart first.");
+      return;
+    }
+
+    alert(
+      "Order system will be connected in the next step!"
+    );
+
+    // Next step:
+    // 1. Find table ID
+    // 2. Create order
+    // 3. Add order items
+    // 4. Send live order to Admin App
+  }
+
+
+  // Start app
+  startApp();
+
+</script>
+
+</body>
+</html>
