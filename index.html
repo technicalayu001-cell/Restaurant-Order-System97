@@ -1,678 +1,1173 @@
 <!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Restaurant Ordering</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  <style>
-    * { box-sizing: border-box; }
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>Restaurant Ordering</title>  <!-- Supabase -->  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #f6f7f9;
-      color: #222;
+      background: #f4f6f8;
+      color: #1f2937;
     }
 
-    .header {
-      background: linear-gradient(135deg, #1f7a4d, #145a38);
+    button {
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    /* HEADER */
+
+    .hero {
+      background: linear-gradient(135deg, #0f6b45, #15915d);
       color: white;
-      padding: 22px 16px;
-      text-align: center;
+      padding: 24px 16px 32px;
     }
 
-    .header h1 { margin: 0; font-size: 26px; }
-    .header p { margin: 7px 0 0; opacity: .9; }
+    .hero-content {
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .restaurant-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .restaurant-title h1 {
+      margin: 0;
+      font-size: 26px;
+    }
 
     .table-badge {
-      display: inline-block;
-      margin-top: 12px;
-      padding: 8px 14px;
-      background: rgba(255,255,255,.18);
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 9px 13px;
       border-radius: 20px;
+      font-size: 14px;
       font-weight: bold;
+      white-space: nowrap;
     }
+
+    .hero p {
+      margin: 8px 0 0;
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    /* MAIN */
 
     .container {
-      max-width: 850px;
-      margin: auto;
-      padding: 15px;
-      padding-bottom: 100px;
+      max-width: 1000px;
+      margin: -14px auto 0;
+      padding: 0 14px 100px;
     }
 
-    .card {
+    .section {
       background: white;
-      border-radius: 16px;
-      padding: 17px;
+      border-radius: 18px;
+      padding: 18px;
       margin-bottom: 16px;
-      box-shadow: 0 3px 14px rgba(0,0,0,.07);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.06);
     }
 
-    h2 { margin: 0 0 15px; font-size: 20px; }
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    /* CATEGORIES */
 
     .categories {
       display: flex;
-      gap: 8px;
+      gap: 9px;
       overflow-x: auto;
-      padding-bottom: 12px;
+      padding-bottom: 10px;
+      scrollbar-width: none;
     }
 
-    .categories button {
+    .categories::-webkit-scrollbar {
+      display: none;
+    }
+
+    .category-btn {
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      color: #4b5563;
+      padding: 9px 15px;
+      border-radius: 22px;
       white-space: nowrap;
-      border: 1px solid #ddd;
-      background: white;
-      color: #333;
-      padding: 9px 14px;
-      border-radius: 20px;
+      font-weight: 600;
     }
 
-    .categories button.active {
-      background: #1f7a4d;
+    .category-btn.active {
+      background: #0f7a4d;
       color: white;
-      border-color: #1f7a4d;
+      border-color: #0f7a4d;
     }
+
+    /* MENU */
 
     .menu-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
     }
 
     .food-card {
-      border: 1px solid #eee;
-      border-radius: 13px;
-      padding: 13px;
+      border: 1px solid #edf0f2;
+      border-radius: 15px;
+      overflow: hidden;
       background: white;
+      transition: transform .2s ease;
     }
 
     .food-image {
       width: 100%;
-      height: 145px;
+      height: 170px;
       object-fit: cover;
-      border-radius: 10px;
-      background: #f0f0f0;
-      margin-bottom: 10px;
+      display: block;
+      background: #edf2f0;
+    }
+
+    .food-placeholder {
+      width: 100%;
+      height: 170px;
+      background: linear-gradient(135deg, #e8f3ed, #d9e9df);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 55px;
+    }
+
+    .food-content {
+      padding: 14px;
     }
 
     .food-name {
-      font-size: 17px;
+      font-size: 18px;
       font-weight: bold;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
     }
 
     .food-description {
-      color: #777;
       font-size: 13px;
-      min-height: 30px;
+      color: #6b7280;
+      line-height: 1.4;
+      min-height: 36px;
     }
 
     .food-bottom {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      margin-top: 10px;
-      gap: 8px;
+      align-items: center;
+      margin-top: 13px;
+      gap: 10px;
     }
 
     .price {
+      color: #087443;
+      font-size: 18px;
       font-weight: bold;
-      color: #1f7a4d;
-      font-size: 17px;
     }
 
-    button {
+    .add-btn {
       border: none;
-      cursor: pointer;
+      background: #0f7a4d;
+      color: white;
+      padding: 10px 16px;
       border-radius: 9px;
-      padding: 10px 14px;
-      font-size: 14px;
       font-weight: bold;
     }
 
-    .primary { background: #1f7a4d; color: white; }
-    .secondary { background: #e9ecef; color: #222; }
-    .orange { background: #e67e22; color: white; }
-    .full { width: 100%; margin-top: 8px; }
+    .add-btn:active {
+      opacity: 0.8;
+    }
+
+    /* CART */
 
     .cart-item {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid #eee;
-      padding: 11px 0;
-      gap: 8px;
+      gap: 10px;
+      padding: 12px 0;
+      border-bottom: 1px solid #eef0f2;
     }
 
-    .cart-name { flex: 1; }
-
-    .quantity {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-
-    .quantity button {
-      padding: 5px 10px;
-      background: #e9ecef;
-      color: #222;
-    }
-
-    .total {
-      display: flex;
-      justify-content: space-between;
-      font-size: 19px;
-      font-weight: bold;
-      margin-top: 15px;
-    }
-
-    input, textarea, select {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 9px;
-      font-size: 15px;
-      margin: 6px 0;
-    }
-
-    textarea { resize: vertical; min-height: 75px; }
-
-    .order-tracker {
-      display: flex;
-      justify-content: space-between;
-      gap: 5px;
-      margin: 20px 0 10px;
-    }
-
-    .step {
+    .cart-info {
       flex: 1;
-      text-align: center;
-      font-size: 11px;
-      color: #999;
-      position: relative;
     }
 
-    .step .circle {
+    .cart-name {
+      font-weight: bold;
+    }
+
+    .cart-price {
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 3px;
+    }
+
+    .quantity-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f3f5f6;
+      border-radius: 9px;
+      padding: 4px;
+    }
+
+    .quantity-box button {
       width: 28px;
       height: 28px;
+      border: none;
+      border-radius: 7px;
+      background: white;
+      font-size: 18px;
+    }
+
+    .cart-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 15px;
+      font-size: 19px;
+      font-weight: bold;
+    }
+
+    /* FORM */
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid #dde2e5;
+      border-radius: 10px;
+      padding: 12px;
+      font-family: inherit;
+      font-size: 14px;
+      margin-top: 12px;
+      outline: none;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #0f7a4d;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .primary-btn {
+      width: 100%;
+      border: none;
+      background: #0f7a4d;
+      color: white;
+      padding: 14px;
+      border-radius: 11px;
+      margin-top: 12px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .primary-btn:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    /* ORDER TRACKING */
+
+    .status-box {
+      text-align: center;
+      background: #edf8f2;
+      color: #087443;
+      padding: 13px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+
+    .tracker {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 22px;
+      gap: 4px;
+    }
+
+    .track-step {
+      flex: 1;
+      text-align: center;
+      color: #9ca3af;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .track-icon {
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
-      background: #ddd;
-      margin: auto auto 5px;
+      background: #e5e7eb;
+      color: white;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
-      font-weight: bold;
+      margin: 0 auto 6px;
     }
 
-    .step.active { color: #1f7a4d; font-weight: bold; }
-    .step.active .circle { background: #1f7a4d; }
+    .track-step.active {
+      color: #087443;
+    }
 
-    .status-box {
-      padding: 12px;
-      background: #eef8f2;
-      color: #176b39;
-      border-radius: 9px;
+    .track-step.active .track-icon {
+      background: #0f7a4d;
+    }
+
+    /* WAITER */
+
+    .waiter-box {
       text-align: center;
-      font-weight: bold;
     }
 
-    .hidden { display: none !important; }
-
-    .message {
-      margin-top: 10px;
-      padding: 10px;
-      border-radius: 8px;
+    .waiter-box p {
+      color: #6b7280;
       font-size: 14px;
     }
 
-    .success { background: #e5f7ec; color: #176b39; }
-    .error { background: #fdeaea; color: #b42318; }
-
     .waiter-btn {
-      background: #e67e22;
+      width: 100%;
+      border: none;
+      background: #e97817;
       color: white;
+      padding: 14px;
+      border-radius: 11px;
       font-size: 16px;
+      font-weight: bold;
     }
 
-    .feedback-stars {
+    /* FEEDBACK */
+
+    .stars {
       display: flex;
-      gap: 7px;
-      margin-bottom: 10px;
+      gap: 8px;
+      margin: 10px 0;
     }
 
     .star {
-      font-size: 30px;
+      font-size: 32px;
+      color: #d1d5db;
       cursor: pointer;
-      color: #ddd;
+      background: none;
+      border: none;
+      padding: 0;
     }
 
-    .star.selected { color: #f39c12; }
+    .star.selected {
+      color: #f5a623;
+    }
+
+    /* MESSAGES */
+
+    .message {
+      margin-top: 12px;
+      padding: 11px;
+      border-radius: 9px;
+      font-size: 14px;
+    }
+
+    .success {
+      background: #e7f7ed;
+      color: #087443;
+    }
+
+    .error {
+      background: #fff0f0;
+      color: #c62828;
+    }
+
+    .empty {
+      color: #6b7280;
+      padding: 15px 0;
+      text-align: center;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 25px;
+      color: #6b7280;
+    }
+
+    .hidden {
+      display: none;
+    }
 
     .footer {
       text-align: center;
-      color: #888;
-      padding: 20px;
+      color: #9ca3af;
       font-size: 13px;
+      padding: 10px;
     }
 
-    @media (max-width: 480px) {
-      .menu-grid { grid-template-columns: 1fr; }
-      .header h1 { font-size: 23px; }
+    @media (max-width: 550px) {
+      .restaurant-title h1 {
+        font-size: 22px;
+      }
+
+      .menu-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .food-image, .food-placeholder {
+        height: 180px;
+      }
     }
-  </style></head><body><div class="header">
-  <h1 id="restaurantName">Restaurant</h1>
-  <p>Order delicious food from your table</p>
-  <div class="table-badge" id="tableBadge">🪑 Table 1</div>
-</div><div class="container">  <!-- MENU -->  <div class="card">
+  </style></head><body>  <header class="hero">
+    <div class="hero-content">
+      <div class="restaurant-title">
+        <h1 id="restaurantName">Restaurant</h1>
+        <div class="table-badge" id="tableBadge">🪑 Table 1</div>
+      </div>
+      <p>Fresh food, easy ordering and quick service.</p>
+    </div>
+  </header>  <main class="container"><!-- MENU -->
+<section class="section">
+  <div class="section-title">
     <h2>🍽️ Our Menu</h2>
-    <div class="categories" id="categories"></div>
-    <div id="menuList">Loading menu...</div>
-  </div>  <!-- CART -->  <div class="card">
-    <h2>🛒 Your Order</h2>
-    <div id="cartList">Your cart is empty.</div><div class="total">
-  <span>Total</span>
-  <span id="cartTotal">₹0</span>
+  </div>
+
+  <div class="categories" id="categories"></div>
+
+  <div id="menuList" class="loading">
+    Loading delicious food...
+  </div>
+</section>
+
+<!-- CART -->
+<section class="section">
+  <div class="section-title">
+    <h2>🛒 Your Cart</h2>
+  </div>
+
+  <div id="cartList" class="empty">
+    Your cart is empty. Add something delicious! 🍔
+  </div>
+
+  <div class="cart-total">
+    <span>Total</span>
+    <span id="cartTotal">₹0</span>
+  </div>
+
+  <input
+    id="customerName"
+    type="text"
+    placeholder="Enter your name">
+
+  <textarea
+    id="orderNotes"
+    placeholder="Special instructions (optional)"></textarea>
+
+  <button
+    id="placeOrderBtn"
+    class="primary-btn"
+    onclick="placeOrder()">
+    Place Order
+  </button>
+
+  <div id="orderMessage"></div>
+</section>
+
+<!-- ORDER STATUS -->
+<section id="orderSection" class="section hidden">
+  <div class="section-title">
+    <h2>📦 Track Your Order</h2>
+  </div>
+
+  <div id="orderStatus" class="status-box">
+    ⏳ Order Received
+  </div>
+
+  <div class="tracker">
+    <div class="track-step active" id="step-pending">
+      <div class="track-icon">1</div>
+      Received
+    </div>
+
+    <div class="track-step" id="step-preparing">
+      <div class="track-icon">2</div>
+      Preparing
+    </div>
+
+    <div class="track-step" id="step-ready">
+      <div class="track-icon">3</div>
+      Ready
+    </div>
+
+    <div class="track-step" id="step-completed">
+      <div class="track-icon">4</div>
+      Completed
+    </div>
+  </div>
+
+  <p style="text-align:center;color:#6b7280;font-size:14px">
+    Estimated time: <strong id="estimatedTime">Updating...</strong>
+  </p>
+</section>
+
+<!-- CALL WAITER -->
+<section class="section waiter-box">
+  <h2>🙋 Need Assistance?</h2>
+  <p>Our waiter will come to your table as soon as possible.</p>
+
+  <button
+    id="waiterBtn"
+    class="waiter-btn"
+    onclick="callWaiter()">
+    📞 Call Waiter
+  </button>
+
+  <div id="waiterMessage"></div>
+</section>
+
+<!-- FEEDBACK -->
+<section class="section">
+  <h2>⭐ Rate Your Experience</h2>
+
+  <div class="stars">
+    <button class="star selected" onclick="setRating(1)">★</button>
+    <button class="star selected" onclick="setRating(2)">★</button>
+    <button class="star selected" onclick="setRating(3)">★</button>
+    <button class="star selected" onclick="setRating(4)">★</button>
+    <button class="star selected" onclick="setRating(5)">★</button>
+  </div>
+
+  <textarea
+    id="feedbackText"
+    placeholder="Tell us about your experience (optional)"></textarea>
+
+  <button
+    class="primary-btn"
+    onclick="sendFeedback()">
+    Submit Feedback
+  </button>
+
+  <div id="feedbackMessage"></div>
+</section>
+
+<div class="footer">
+  Thank you for dining with us ❤️
 </div>
 
-<input id="customerName" placeholder="Your name">
-<textarea id="orderNotes" placeholder="Special instructions (optional)"></textarea>
+  </main><script>
 
-<button class="primary full" id="placeOrderBtn" onclick="placeOrder()">
-  Place Order
-</button>
-
-<div id="orderMessage"></div>
-
-  </div>  <!-- ORDER STATUS -->  <div class="card hidden" id="orderSection">
-    <h2>📦 Track Your Order</h2><div class="status-box" id="orderStatus">
-  Order received
-</div>
-
-<div class="order-tracker">
-  <div class="step active" id="step-pending">
-    <div class="circle">1</div>
-    Received
-  </div>
-  <div class="step" id="step-preparing">
-    <div class="circle">2</div>
-    Preparing
-  </div>
-  <div class="step" id="step-ready">
-    <div class="circle">3</div>
-    Ready
-  </div>
-  <div class="step" id="step-completed">
-    <div class="circle">4</div>
-    Completed
-  </div>
-</div>
-
-<p style="text-align:center">
-  ⏱️ Estimated time: <strong id="estimatedTime">20 minutes</strong>
-</p>
-
-  </div>  <!-- CALL WAITER -->  <div class="card">
-    <h2>🙋 Need Help?</h2>
-    <p style="color:#666;font-size:14px">Need assistance? Call a waiter to your table.</p>
-    <button class="waiter-btn full" onclick="callWaiter()">
-      📞 Call Waiter
-    </button>
-    <div id="waiterMessage"></div>
-  </div>  <!-- FEEDBACK -->  <div class="card">
-    <h2>⭐ Rate Your Experience</h2><div class="feedback-stars" id="stars">
-  <span class="star" onclick="setRating(1)">★</span>
-  <span class="star" onclick="setRating(2)">★</span>
-  <span class="star" onclick="setRating(3)">★</span>
-  <span class="star" onclick="setRating(4)">★</span>
-  <span class="star" onclick="setRating(5)">★</span>
-</div>
-
-<textarea id="feedbackMessage" placeholder="Tell us about your experience (optional)"></textarea>
-<button class="primary" onclick="sendFeedback()">Submit Feedback</button>
-<div id="feedbackResult"></div>
-
-  </div></div><div class="footer">Thank you for dining with us ❤️</div><script>
-/* ===============================
+/* ==========================================
    SUPABASE CONFIGURATION
-================================ */
-const SUPABASE_URL = "https://ltpjjckiaaonpetbzfvn.supabase.co";
+   ========================================== */
 
-/* IMPORTANT:
-   Apni Supabase Dashboard ki Publishable key yahan paste karein.
-   Secret key kabhi use na karein.
+const SUPABASE_URL =
+  "https://ltpjjckiaaonpetbzfvn.supabase.co";
+
+/*
+  IMPORTANT:
+  Yahan apni Supabase Dashboard ki
+  PUBLISHABLE / ANON KEY paste karein.
+
+  Secret key kabhi website me use na karein.
 */
-const SUPABASE_KEY = "sb_publishable_EAWWJe0aicdmnT1HQopX_A_nEUkKbyN";
 
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-
-/* ===============================
-   RESTAURANT & TABLE
-================================ */
-const DEFAULT_RESTAURANT_ID = "eeb68534-af30-4739-ada4-2ac88827ccbf";
-
-const params = new URLSearchParams(window.location.search);
-const restaurantId = params.get("restaurant") || DEFAULT_RESTAURANT_ID;
-const tableNumber = Number(params.get("table") || 1);
-
-document.getElementById("tableBadge").textContent = "🪑 Table " + tableNumber;
+const SUPABASE_KEY =
+  "sb_publishable_EAWWJe0aicdmnT1HQopX_A_nEUkKbyN ";
 
 
-/* ===============================
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+
+/* ==========================================
+   RESTAURANT & TABLE SETTINGS
+   ========================================== */
+
+/* Aapka working restaurant ID */
+
+const DEFAULT_RESTAURANT_ID =
+  "eeb68534-af30-4739-ada4-2ac88827ccbf";
+
+
+const urlParams = new URLSearchParams(
+  window.location.search
+);
+
+const restaurantId =
+  urlParams.get("restaurant") ||
+  DEFAULT_RESTAURANT_ID;
+
+const tableNumber =
+  Number(urlParams.get("table")) || 1;
+
+
+document.getElementById("tableBadge").textContent =
+  "🪑 Table " + tableNumber;
+
+
+/* ==========================================
    CUSTOMER TOKEN
-================================ */
-let customerToken = localStorage.getItem("restaurant_customer_token");
+   ========================================== */
+
+let customerToken = localStorage.getItem(
+  "restaurant_customer_token"
+);
 
 if (!customerToken) {
   customerToken = crypto.randomUUID();
-  localStorage.setItem("restaurant_customer_token", customerToken);
+
+  localStorage.setItem(
+    "restaurant_customer_token",
+    customerToken
+  );
 }
 
 
-/* ===============================
-   VARIABLES
-================================ */
+/* ==========================================
+   APP VARIABLES
+   ========================================== */
+
 let menuItems = [];
 let cart = {};
 let activeCategory = "All";
-let currentOrder = null;
 let selectedRating = 5;
+let currentOrder = null;
+let orderChannel = null;
 
 
-/* ===============================
-   START APP
-================================ */
+/* ==========================================
+   START APPLICATION
+   ========================================== */
+
 async function startApp() {
   await loadRestaurant();
   await loadMenu();
+  await loadPreviousOrder();
 }
 
 
-/* ===============================
-   RESTAURANT
-================================ */
-async function loadRestaurant() {
-  try {
-    const { data, error } = await db
-      .from("restaurants")
-      .select("name")
-      .eq("id", restaurantId)
-      .maybeSingle();
+/* ==========================================
+   LOAD RESTAURANT
+   ========================================== */
 
-    if (!error && data) {
-      document.getElementById("restaurantName").textContent =
-        data.name || "Restaurant";
-    }
-  } catch (e) {
-    console.log(e);
+async function loadRestaurant() {
+
+  const { data, error } = await db
+    .from("restaurants")
+    .select("name")
+    .eq("id", restaurantId)
+    .maybeSingle();
+
+  if (!error && data && data.name) {
+    document.getElementById(
+      "restaurantName"
+    ).textContent = data.name;
   }
 }
 
 
-/* ===============================
-   MENU
-================================ */
+/* ==========================================
+   LOAD MENU
+   ========================================== */
+
 async function loadMenu() {
-  const menuBox = document.getElementById("menuList");
-  menuBox.innerHTML = "Loading menu...";
+
+  const menuBox =
+    document.getElementById("menuList");
+
+  menuBox.innerHTML =
+    '<div class="loading">Loading delicious food...</div>';
+
 
   const { data, error } = await db
     .from("menu_items")
     .select("*")
     .eq("restaurant_id", restaurantId)
     .eq("is_available", true)
-    .order("created_at", { ascending: false });
+    .order("created_at", {
+      ascending: false
+    });
+
 
   if (error) {
+
     menuBox.innerHTML =
-      '<div class="message error">Menu could not be loaded: ' +
-      error.message + '</div>';
+      '<div class="message error">' +
+      'Menu could not be loaded: ' +
+      escapeHtml(error.message) +
+      '</div>';
+
     return;
   }
 
+
   menuItems = data || [];
+
   renderCategories();
   renderMenu();
 }
 
 
+/* ==========================================
+   CATEGORIES
+   ========================================== */
+
 function renderCategories() {
+
+  const categorySet = new Set();
+
+  menuItems.forEach(item => {
+    categorySet.add(
+      item.category || "Other"
+    );
+  });
+
+
   const categories = [
     "All",
-    ...new Set(menuItems.map(item => item.category || "Other"))
+    ...Array.from(categorySet)
   ];
 
-  document.getElementById("categories").innerHTML =
-    categories.map(category => `
-      <button
-        class="${category === activeCategory ? "active" : ""}"
-        onclick="selectCategory(${JSON.stringify(category)})">
-        ${category}
-      </button>
-    `).join("");
+
+  document.getElementById(
+    "categories"
+  ).innerHTML = categories.map(category =>
+
+    `<button
+      class="category-btn ${
+        category === activeCategory
+          ? "active"
+          : ""
+      }"
+      onclick='selectCategory(${JSON.stringify(category)})'>
+      ${escapeHtml(category)}
+    </button>`
+
+  ).join("");
 }
 
 
 function selectCategory(category) {
+
   activeCategory = category;
+
   renderCategories();
   renderMenu();
 }
 
 
+/* ==========================================
+   DISPLAY MENU
+   ========================================== */
+
 function renderMenu() {
-  const menuBox = document.getElementById("menuList");
 
-  const items = activeCategory === "All"
-    ? menuItems
-    : menuItems.filter(item =>
-        (item.category || "Other") === activeCategory
-      );
+  const menuBox =
+    document.getElementById("menuList");
 
-  if (!items.length) {
+
+  const visibleItems =
+    activeCategory === "All"
+      ? menuItems
+      : menuItems.filter(item =>
+          (item.category || "Other") ===
+          activeCategory
+        );
+
+
+  if (!visibleItems.length) {
+
     menuBox.innerHTML =
-      '<p style="color:#777">No food items available right now.</p>';
+      '<div class="empty">' +
+      'No food items available right now.' +
+      '</div>';
+
     return;
   }
 
+
   menuBox.innerHTML = `
     <div class="menu-grid">
-      ${items.map(item => `
-        <div class="food-card">
 
-          ${item.image_url
-            ? `<img class="food-image"
-                    src="${item.image_url}"
-                    alt="${item.name}">`
-            : `<div class="food-image"></div>`
-          }
+      ${visibleItems.map(item => {
 
-          <div class="food-name">${item.name}</div>
+        const image = item.image_url
+          ? `<img
+               class="food-image"
+               src="${escapeAttribute(item.image_url)}"
+               alt="${escapeAttribute(item.name || "Food item")}"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+             <div class="food-placeholder" style="display:none;">🍽️</div>`
+          : `<div class="food-placeholder">🍽️</div>`;
 
-          <div class="food-description">
-            ${item.description || ""}
+
+        return `
+          <div class="food-card">
+
+            ${image}
+
+            <div class="food-content">
+
+              <div class="food-name">
+                ${escapeHtml(item.name || "Food Item")}
+              </div>
+
+              <div class="food-description">
+                ${escapeHtml(
+                  item.description ||
+                  "Freshly prepared and delicious."
+                )}
+              </div>
+
+              <div class="food-bottom">
+
+                <span class="price">
+                  ₹${Number(item.price || 0).toFixed(0)}
+                </span>
+
+                <button
+                  class="add-btn"
+                  onclick="addToCart('${item.id}')">
+                  + Add
+                </button>
+
+              </div>
+
+            </div>
+
           </div>
+        `;
 
-          <div class="food-bottom">
-            <span class="price">₹${Number(item.price).toFixed(0)}</span>
+      }).join("")}
 
-            <button class="primary"
-              onclick="addToCart('${item.id}')">
-              + Add
-            </button>
-          </div>
-
-        </div>
-      `).join("")}
     </div>
   `;
 }
 
 
-/* ===============================
+/* ==========================================
    CART
-================================ */
+   ========================================== */
+
 function addToCart(itemId) {
-  const item = menuItems.find(i => i.id === itemId);
+
+  const item =
+    menuItems.find(
+      menuItem =>
+        menuItem.id === itemId
+    );
+
   if (!item) return;
 
+
   if (!cart[itemId]) {
+
     cart[itemId] = {
       item: item,
       quantity: 0
     };
   }
 
+
   cart[itemId].quantity++;
+
   renderCart();
 }
 
 
-function changeQuantity(itemId, change) {
+function changeQuantity(
+  itemId,
+  change
+) {
+
   if (!cart[itemId]) return;
+
 
   cart[itemId].quantity += change;
 
-  if (cart[itemId].quantity <= 0) {
+
+  if (
+    cart[itemId].quantity <= 0
+  ) {
     delete cart[itemId];
   }
+
 
   renderCart();
 }
 
 
 function renderCart() {
-  const cartBox = document.getElementById("cartList");
-  const entries = Object.values(cart);
+
+  const cartBox =
+    document.getElementById("cartList");
+
+  const entries =
+    Object.values(cart);
+
 
   if (!entries.length) {
-    cartBox.innerHTML = "Your cart is empty.";
-    document.getElementById("cartTotal").textContent = "₹0";
+
+    cartBox.innerHTML =
+      '<div class="empty">' +
+      'Your cart is empty. Add something delicious! 🍔' +
+      '</div>';
+
+    document.getElementById(
+      "cartTotal"
+    ).textContent = "₹0";
+
     return;
   }
 
+
   let total = 0;
 
-  cartBox.innerHTML = entries.map(row => {
-    const itemTotal =
-      Number(row.item.price) * row.quantity;
 
-    total += itemTotal;
+  cartBox.innerHTML =
+    entries.map(row => {
 
-    return `
-      <div class="cart-item">
+      const itemTotal =
+        Number(row.item.price || 0) *
+        row.quantity;
 
-        <div class="cart-name">
-          <strong>${row.item.name}</strong><br>
-          <small>₹${row.item.price} each</small>
+      total += itemTotal;
+
+
+      return `
+        <div class="cart-item">
+
+          <div class="cart-info">
+
+            <div class="cart-name">
+              ${escapeHtml(row.item.name)}
+            </div>
+
+            <div class="cart-price">
+              ₹${Number(
+                row.item.price || 0
+              ).toFixed(0)} each
+            </div>
+
+          </div>
+
+          <div class="quantity-box">
+
+            <button
+              onclick="changeQuantity('${row.item.id}', -1)">
+              −
+            </button>
+
+            <strong>
+              ${row.quantity}
+            </strong>
+
+            <button
+              onclick="changeQuantity('${row.item.id}', 1)">
+              +
+            </button>
+
+          </div>
+
+          <strong>
+            ₹${itemTotal.toFixed(0)}
+          </strong>
+
         </div>
+      `;
 
-        <div class="quantity">
-          <button onclick="changeQuantity('${row.item.id}', -1)">−</button>
+    }).join("");
 
-          <strong>${row.quantity}</strong>
 
-          <button onclick="changeQuantity('${row.item.id}', 1)">+</button>
-        </div>
-
-        <strong>₹${itemTotal.toFixed(0)}</strong>
-
-      </div>
-    `;
-  }).join("");
-
-  document.getElementById("cartTotal").textContent =
+  document.getElementById(
+    "cartTotal"
+  ).textContent =
     "₹" + total.toFixed(0);
 }
 
 
-/* ===============================
+/* ==========================================
    PLACE ORDER
-================================ */
+   ========================================== */
+
 async function placeOrder() {
 
-  const entries = Object.values(cart);
+  const entries =
+    Object.values(cart);
+
 
   if (!entries.length) {
-    showMessage("orderMessage",
-      "Please add food items first.", "error");
+
+    showMessage(
+      "orderMessage",
+      "Please add food items first.",
+      "error"
+    );
+
     return;
   }
+
 
   const customerName =
-    document.getElementById("customerName").value.trim();
+    document.getElementById(
+      "customerName"
+    ).value.trim();
+
 
   if (!customerName) {
-    showMessage("orderMessage",
-      "Please enter your name.", "error");
+
+    showMessage(
+      "orderMessage",
+      "Please enter your name.",
+      "error"
+    );
+
     return;
   }
 
+
   const button =
-    document.getElementById("placeOrderBtn");
+    document.getElementById(
+      "placeOrderBtn"
+    );
+
 
   button.disabled = true;
-  button.textContent = "Placing Order...";
+  button.textContent =
+    "Placing your order...";
+
 
   try {
 
-    const total = entries.reduce(
-      (sum, row) =>
-        sum + Number(row.item.price) * row.quantity,
-      0
-    );
+    const total =
+      entries.reduce(
+        (sum, row) =>
+          sum +
+          Number(row.item.price || 0) *
+          row.quantity,
+        0
+      );
 
-    const { data: tableData } = await db
+
+    /* Find table ID if table exists */
+
+    const {
+      data: tableData
+    } = await db
       .from("restaurant_tables")
       .select("id")
-      .eq("restaurant_id", restaurantId)
-      .eq("table_number", tableNumber)
+      .eq(
+        "restaurant_id",
+        restaurantId
+      )
+      .eq(
+        "table_number",
+        tableNumber
+      )
       .maybeSingle();
 
-    const orderData = {
+
+    const orderPayload = {
       restaurant_id: restaurantId,
+      table_id: tableData
+        ? tableData.id
+        : null,
       table_number: tableNumber,
-      table_id: tableData ? tableData.id : null,
       customer_name: customerName,
       status: "pending",
       estimated_time: 20,
       total_amount: total,
       customer_token: customerToken,
-      notes: document.getElementById("orderNotes").value.trim()
+      notes: document
+        .getElementById("orderNotes")
+        .value
+        .trim()
     };
 
-    const { data: order, error: orderError } = await db
+
+    const {
+      data: order,
+      error: orderError
+    } = await db
       .from("orders")
-      .insert(orderData)
+      .insert(orderPayload)
       .select()
       .single();
 
-    if (orderError) throw orderError;
+
+    if (orderError) {
+      throw orderError;
+    }
 
 
-    const items = entries.map(row => ({
-      order_id: order.id,
-      menu_item_id: row.item.id,
-      quantity: row.quantity,
-      price: Number(row.item.price)
-    }));
+    const orderItems =
+      entries.map(row => ({
+        order_id: order.id,
+        menu_item_id: row.item.id,
+        quantity: row.quantity,
+        price: Number(
+          row.item.price || 0
+        )
+      }));
 
-    const { error: itemError } = await db
+
+    const {
+      error: itemError
+    } = await db
       .from("order_items")
-      .insert(items);
+      .insert(orderItems);
 
-    if (itemError) throw itemError;
+
+    if (itemError) {
+      throw itemError;
+    }
 
 
     currentOrder = order;
 
+
+    localStorage.setItem(
+      "restaurant_current_order",
+      JSON.stringify({
+        restaurantId:
+          restaurantId,
+        tableNumber:
+          tableNumber,
+        orderId:
+          order.id
+      })
+    );
+
+
     cart = {};
     renderCart();
 
-    showMessage("orderMessage",
-      "🎉 Your order has been placed successfully!",
-      "success");
 
-    document.getElementById("orderSection")
+    showMessage(
+      "orderMessage",
+      "🎉 Your order has been placed successfully!",
+      "success"
+    );
+
+
+    document
+      .getElementById("orderSection")
       .classList.remove("hidden");
+
 
     updateOrderUI(order);
 
@@ -680,40 +1175,147 @@ async function placeOrder() {
 
   } catch (error) {
 
-    showMessage("orderMessage",
-      "Order could not be placed: " + error.message,
-      "error");
+    showMessage(
+      "orderMessage",
+      "Order could not be placed: " +
+      error.message,
+      "error"
+    );
 
   } finally {
 
     button.disabled = false;
-    button.textContent = "Place Order";
+    button.textContent =
+      "Place Order";
   }
 }
 
 
-/* ===============================
+/* ==========================================
+   LOAD PREVIOUS ORDER
+   ========================================== */
+
+async function loadPreviousOrder() {
+
+  const savedOrder =
+    localStorage.getItem(
+      "restaurant_current_order"
+    );
+
+
+  if (!savedOrder) return;
+
+
+  try {
+
+    const saved =
+      JSON.parse(savedOrder);
+
+
+    if (
+      saved.restaurantId !== restaurantId ||
+      saved.tableNumber !== tableNumber
+    ) {
+      return;
+    }
+
+
+    const {
+      data,
+      error
+    } = await db
+      .from("orders")
+      .select("*")
+      .eq("id", saved.orderId)
+      .maybeSingle();
+
+
+    if (
+      error ||
+      !data
+    ) {
+      return;
+    }
+
+
+    currentOrder = data;
+
+
+    document
+      .getElementById("orderSection")
+      .classList.remove("hidden");
+
+
+    updateOrderUI(data);
+
+    subscribeToOrder();
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+
+/* ==========================================
    ORDER STATUS
-================================ */
+   ========================================== */
+
 function updateOrderUI(order) {
 
-  const status = order.status || "pending";
+  const status =
+    order.status || "pending";
 
-  const statusNames = {
-    pending: "⏳ Order Received",
-    accepted: "✅ Order Accepted",
-    preparing: "👨‍🍳 Food is being prepared",
-    ready: "🍽️ Your food is ready",
-    completed: "🎉 Order Completed"
+
+  const statusText = {
+
+    pending:
+      "⏳ Order Received",
+
+    accepted:
+      "✅ Order Accepted",
+
+    preparing:
+      "👨‍🍳 Food is being prepared",
+
+    ready:
+      "🍽️ Your food is ready",
+
+    completed:
+      "🎉 Order Completed"
+
   };
 
-  document.getElementById("orderStatus").textContent =
-    statusNames[status] || status;
 
-  document.getElementById("estimatedTime").textContent =
+  document.getElementById(
+    "orderStatus"
+  ).textContent =
+    statusText[status] ||
+    status;
+
+
+  document.getElementById(
+    "estimatedTime"
+  ).textContent =
     order.estimated_time
-      ? order.estimated_time + " minutes"
+      ? order.estimated_time +
+        " minutes"
       : "Updating...";
+
+
+  const progress = {
+
+    pending: 0,
+    accepted: 0,
+    preparing: 1,
+    ready: 2,
+    completed: 3
+
+  };
+
+
+  const currentStep =
+    progress[status] ?? 0;
+
 
   const steps = [
     "pending",
@@ -722,33 +1324,46 @@ function updateOrderUI(order) {
     "completed"
   ];
 
-  let currentIndex = steps.indexOf(status);
 
-  if (status === "accepted") currentIndex = 0;
+  steps.forEach(
+    (step, index) => {
 
-  steps.forEach((step, index) => {
-    document.getElementById("step-" + step)
-      .classList.toggle("active",
-        index <= currentIndex);
-  });
+      document
+        .getElementById(
+          "step-" + step
+        )
+        .classList.toggle(
+          "active",
+          index <= currentStep
+        );
+
+    }
+  );
 }
 
 
-/* ===============================
+/* ==========================================
    REALTIME ORDER UPDATE
-================================ */
-let orderChannel;
+   ========================================== */
 
 function subscribeToOrder() {
 
   if (!currentOrder) return;
 
+
   if (orderChannel) {
-    db.removeChannel(orderChannel);
+
+    db.removeChannel(
+      orderChannel
+    );
   }
 
+
   orderChannel = db
-    .channel("order-" + currentOrder.id)
+    .channel(
+      "customer-order-" +
+      currentOrder.id
+    )
 
     .on(
       "postgres_changes",
@@ -756,11 +1371,19 @@ function subscribeToOrder() {
         event: "UPDATE",
         schema: "public",
         table: "orders",
-        filter: "id=eq." + currentOrder.id
+        filter:
+          "id=eq." +
+          currentOrder.id
       },
+
       payload => {
-        currentOrder = payload.new;
-        updateOrderUI(currentOrder);
+
+        currentOrder =
+          payload.new;
+
+        updateOrderUI(
+          currentOrder
+        );
       }
     )
 
@@ -768,115 +1391,200 @@ function subscribeToOrder() {
 }
 
 
-/* ===============================
+/* ==========================================
    CALL WAITER
-================================ */
+   ========================================== */
+
 async function callWaiter() {
 
-  const button = event.target;
+  const button =
+    document.getElementById(
+      "waiterBtn"
+    );
+
+
   button.disabled = true;
-  button.textContent = "Calling...";
+  button.textContent =
+    "Calling waiter...";
+
 
   try {
 
-    const { error } = await db
+    const {
+      error
+    } = await db
       .from("waiter_calls")
       .insert({
-        restaurant_id: restaurantId,
-        table_number: tableNumber,
-        customer_token: customerToken
+        restaurant_id:
+          restaurantId,
+        table_number:
+          tableNumber,
+        customer_token:
+          customerToken
       });
 
-    if (error) throw error;
 
-    showMessage("waiterMessage",
+    if (error) {
+      throw error;
+    }
+
+
+    showMessage(
+      "waiterMessage",
       "✅ Waiter has been notified for Table " +
       tableNumber + ".",
-      "success");
+      "success"
+    );
 
   } catch (error) {
 
-    showMessage("waiterMessage",
-      "Could not call waiter: " + error.message,
-      "error");
+    showMessage(
+      "waiterMessage",
+      "Could not call waiter: " +
+      error.message,
+      "error"
+    );
 
   } finally {
 
     button.disabled = false;
-    button.textContent = "📞 Call Waiter";
+    button.textContent =
+      "📞 Call Waiter";
   }
 }
 
 
-/* ===============================
+/* ==========================================
    FEEDBACK
-================================ */
+   ========================================== */
+
 function setRating(rating) {
 
   selectedRating = rating;
 
-  document.querySelectorAll(".star")
-    .forEach((star, index) => {
+
+  const stars =
+    document.querySelectorAll(
+      ".star"
+    );
+
+
+  stars.forEach(
+    (star, index) => {
 
       star.classList.toggle(
         "selected",
         index < rating
       );
 
-    });
+    }
+  );
 }
-
-
-setRating(5);
 
 
 async function sendFeedback() {
 
   try {
 
-    const { error } = await db
+    const message =
+      document
+        .getElementById(
+          "feedbackText"
+        )
+        .value
+        .trim();
+
+
+    const {
+      error
+    } = await db
       .from("feedback")
       .insert({
-        restaurant_id: restaurantId,
-        table_number: tableNumber,
-        rating: selectedRating,
-        message: document
-          .getElementById("feedbackMessage")
-          .value.trim(),
-        customer_token: customerToken
+        restaurant_id:
+          restaurantId,
+        table_number:
+          tableNumber,
+        rating:
+          selectedRating,
+        message:
+          message,
+        customer_token:
+          customerToken
       });
 
-    if (error) throw error;
 
-    document.getElementById("feedbackMessage").value = "";
+    if (error) {
+      throw error;
+    }
 
-    showMessage("feedbackResult",
+
+    document
+      .getElementById(
+        "feedbackText"
+      ).value = "";
+
+
+    showMessage(
+      "feedbackMessage",
       "Thank you for your feedback! ⭐",
-      "success");
+      "success"
+    );
 
   } catch (error) {
 
-    showMessage("feedbackResult",
+    showMessage(
+      "feedbackMessage",
       "Feedback could not be submitted: " +
       error.message,
-      "error");
+      "error"
+    );
   }
 }
 
 
-/* ===============================
-   HELPER
-================================ */
-function showMessage(id, message, type) {
+/* ==========================================
+   HELPER FUNCTIONS
+   ========================================== */
 
-  const box = document.getElementById(id);
+function showMessage(
+  elementId,
+  text,
+  type
+) {
 
-  box.className = "message " + type;
-  box.textContent = message;
+  const element =
+    document.getElementById(
+      elementId
+    );
+
+
+  element.className =
+    "message " + type;
+
+  element.textContent =
+    text;
 }
 
 
-// Start
+function escapeHtml(value) {
+
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+function escapeAttribute(value) {
+  return escapeHtml(value);
+}
+
+
+/* START */
+
 startApp();
+
 </script></body>
 </html>
