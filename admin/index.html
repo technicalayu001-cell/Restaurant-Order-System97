@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Restaurant Admin</title>
 
   <style>
@@ -40,15 +41,21 @@
       padding: 16px;
     }
 
-    .card {
+    .dashboard {
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 16px;
+    }
+
+    .card, .welcome-card {
       background: white;
-      padding: 22px;
+      padding: 20px;
       border-radius: 15px;
-      box-shadow: 0 3px 15px rgba(0,0,0,.1);
+      box-shadow: 0 3px 15px rgba(0,0,0,.08);
       margin-bottom: 15px;
     }
 
-    h2, h3 {
+    h2, h3, h4 {
       margin-top: 0;
     }
 
@@ -105,33 +112,21 @@
       min-height: 20px;
     }
 
-    /* DASHBOARD */
-    .dashboard {
-      max-width: 900px;
-      margin: 20px auto;
-      padding: 16px;
-    }
-
-    .welcome-card {
-      background: white;
-      padding: 18px;
-      border-radius: 15px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.06);
-    }
+    /* Navigation */
 
     .nav-tabs {
       display: flex;
       gap: 8px;
       overflow-x: auto;
-      margin-bottom: 15px;
+      margin-bottom: 18px;
+      padding-bottom: 3px;
     }
 
     .nav-tabs button {
       width: auto;
       white-space: nowrap;
       margin: 0;
-      padding: 10px 14px;
+      padding: 10px 15px;
       background: white;
       color: #222;
       border: 1px solid #ddd;
@@ -142,6 +137,100 @@
       color: white;
       border-color: #1f7a4d;
     }
+
+    /* Dashboard stats */
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 18px;
+      border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+    }
+
+    .stat-card span {
+      display: block;
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .stat-card strong {
+      font-size: 24px;
+      color: #1f7a4d;
+    }
+
+    /* Orders */
+
+    .order-card {
+      background: white;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.07);
+      border-left: 5px solid #1f7a4d;
+    }
+
+    .order-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .order-top h4 {
+      margin: 0;
+    }
+
+    .status-badge {
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      background: #e9ecef;
+    }
+
+    .order-info {
+      font-size: 14px;
+      color: #555;
+      margin: 6px 0;
+    }
+
+    .order-items {
+      background: #f7f8f9;
+      border-radius: 8px;
+      padding: 10px;
+      margin: 10px 0;
+    }
+
+    .order-item {
+      padding: 5px 0;
+      font-size: 14px;
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    .order-item:last-child {
+      border-bottom: none;
+    }
+
+    .order-total {
+      font-size: 18px;
+      font-weight: bold;
+      color: #1f7a4d;
+      margin: 10px 0;
+    }
+
+    .status-select {
+      margin-top: 8px;
+    }
+
+    /* Menu */
 
     .menu-item-admin {
       background: #fff;
@@ -164,6 +253,7 @@
     .menu-actions {
       display: flex;
       gap: 8px;
+      flex-wrap: wrap;
     }
 
     .menu-actions button {
@@ -182,6 +272,23 @@
       color: #c0392b;
       font-weight: bold;
     }
+
+    .refresh-btn {
+      width: auto;
+      padding: 9px 15px;
+      margin: 0 0 12px;
+    }
+
+    @media (max-width: 500px) {
+      .dashboard {
+        padding: 12px;
+      }
+
+      .order-top {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
 
@@ -197,7 +304,6 @@
 
 <div class="container" id="authSection">
 
-  <!-- LOGIN -->
   <div class="card" id="loginCard">
     <h2>Admin Login</h2>
 
@@ -214,7 +320,6 @@
   </div>
 
 
-  <!-- SIGNUP -->
   <div class="card hidden" id="signupCard">
     <h2>Create Restaurant Account</h2>
 
@@ -246,29 +351,88 @@
     <p id="ownerInfo"></p>
   </div>
 
+
   <div class="nav-tabs">
-    <button class="active" onclick="showTab('home', this)">🏠 Dashboard</button>
-    <button onclick="showTab('menu', this)">🍔 Menu</button>
+    <button class="active" onclick="showTab('home', this)">
+      🏠 Dashboard
+    </button>
+
+    <button onclick="showTab('orders', this)">
+      📦 Orders
+    </button>
+
+    <button onclick="showTab('menu', this)">
+      🍔 Menu
+    </button>
   </div>
 
 
-  <!-- HOME TAB -->
+  <!-- ================= HOME ================= -->
+
   <div id="homeTab" class="tab-content">
-    <div class="welcome-card">
-      <h3>🚀 Restaurant Dashboard</h3>
-      <p>Your restaurant account is connected successfully.</p>
-      <p>Next features: Orders, Tables & QR, Billing and Live Updates.</p>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span>📦 Total Orders</span>
+        <strong id="totalOrders">0</strong>
+      </div>
+
+      <div class="stat-card">
+        <span>⏳ Pending</span>
+        <strong id="pendingOrders">0</strong>
+      </div>
+
+      <div class="stat-card">
+        <span>👨‍🍳 Preparing</span>
+        <strong id="preparingOrders">0</strong>
+      </div>
+
+      <div class="stat-card">
+        <span>✅ Ready</span>
+        <strong id="readyOrders">0</strong>
+      </div>
     </div>
+
+    <div class="welcome-card" style="margin-top:15px;">
+      <h3>🚀 Restaurant Dashboard</h3>
+      <p>Manage your customer orders and menu from one place.</p>
+
+      <button onclick="refreshDashboard()">
+        🔄 Refresh Dashboard
+      </button>
+    </div>
+
   </div>
 
 
-  <!-- MENU TAB -->
+  <!-- ================= ORDERS ================= -->
+
+  <div id="ordersTab" class="tab-content hidden">
+
+    <div class="welcome-card">
+      <h3>📦 Customer Orders</h3>
+
+      <button class="refresh-btn" onclick="loadOrders()">
+        🔄 Refresh Orders
+      </button>
+
+      <div id="ordersList">
+        Loading orders...
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ================= MENU ================= -->
+
   <div id="menuTab" class="tab-content hidden">
 
     <div class="welcome-card">
       <h3>➕ Add Menu Item</h3>
 
-      <input type="text" id="menuName" placeholder="Food Item Name">
+      <input type="text" id="menuName"
+        placeholder="Food Item Name">
 
       <textarea id="menuDescription"
         placeholder="Description (optional)"></textarea>
@@ -279,7 +443,9 @@
       <input type="text" id="menuCategory"
         placeholder="Category (Example: Snacks, Main Course)">
 
-      <button onclick="addMenuItem()">➕ Add to Menu</button>
+      <button onclick="addMenuItem()">
+        ➕ Add to Menu
+      </button>
 
       <div class="message" id="menuMessage"></div>
     </div>
@@ -287,6 +453,7 @@
 
     <div class="welcome-card">
       <h3>🍽️ Your Menu</h3>
+
       <div id="adminMenuList">
         Loading menu...
       </div>
@@ -295,7 +462,9 @@
   </div>
 
 
-  <button class="danger" onclick="logout()">Logout</button>
+  <button class="danger" onclick="logout()">
+    Logout
+  </button>
 
 </div>
 
@@ -310,8 +479,11 @@
   // SUPABASE CONFIG
   // =====================================
 
-  const SUPABASE_URL = "https://yravmnkdagtafdazguvl.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_EAWWJe0aicdmnT1HQopX_A_nEUkKbyN";
+  const SUPABASE_URL =
+    "https://yravmnkdagtafdazguvl.supabase.co";
+
+  const SUPABASE_ANON_KEY =
+    "sb_publishable_EAWWJe0aicdmnT1HQopX_A_nEUkKbyN";
 
   const supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
@@ -332,13 +504,20 @@
   // =====================================
 
   function showSignup() {
-    document.getElementById("loginCard").classList.add("hidden");
-    document.getElementById("signupCard").classList.remove("hidden");
+    document.getElementById("loginCard")
+      .classList.add("hidden");
+
+    document.getElementById("signupCard")
+      .classList.remove("hidden");
   }
 
+
   function showLogin() {
-    document.getElementById("signupCard").classList.add("hidden");
-    document.getElementById("loginCard").classList.remove("hidden");
+    document.getElementById("signupCard")
+      .classList.add("hidden");
+
+    document.getElementById("loginCard")
+      .classList.remove("hidden");
   }
 
 
@@ -348,26 +527,40 @@
 
   async function signup() {
 
-    const restaurantName = document.getElementById("restaurantName").value.trim();
-    const ownerName = document.getElementById("ownerName").value.trim();
-    const phone = document.getElementById("phone").value.trim();
-    const address = document.getElementById("address").value.trim();
-    const email = document.getElementById("signupEmail").value.trim();
-    const password = document.getElementById("signupPassword").value;
+    const restaurantName =
+      document.getElementById("restaurantName").value.trim();
 
-    const message = document.getElementById("signupMessage");
+    const ownerName =
+      document.getElementById("ownerName").value.trim();
+
+    const phone =
+      document.getElementById("phone").value.trim();
+
+    const address =
+      document.getElementById("address").value.trim();
+
+    const email =
+      document.getElementById("signupEmail").value.trim();
+
+    const password =
+      document.getElementById("signupPassword").value;
+
+    const message =
+      document.getElementById("signupMessage");
 
     if (!restaurantName || !email || !password) {
-      message.textContent = "Please fill Restaurant Name, Email and Password.";
+      message.textContent =
+        "Please fill Restaurant Name, Email and Password.";
       return;
     }
 
     message.textContent = "Creating account...";
 
-    const { data, error } = await supabaseClient.auth.signUp({
-      email: email,
-      password: password
-    });
+    const { data, error } =
+      await supabaseClient.auth.signUp({
+        email,
+        password
+      });
 
     if (error) {
       message.textContent = error.message;
@@ -377,19 +570,21 @@
     const user = data.user;
 
     if (!user) {
-      message.textContent = "Account could not be created.";
+      message.textContent =
+        "Account could not be created.";
       return;
     }
 
-    const { error: restaurantError } = await supabaseClient
-      .from("restaurants")
-      .insert({
-        name: restaurantName,
-        owner_id: user.id,
-        owner_name: ownerName,
-        phone: phone,
-        address: address
-      });
+    const { error: restaurantError } =
+      await supabaseClient
+        .from("restaurants")
+        .insert({
+          name: restaurantName,
+          owner_id: user.id,
+          owner_name: ownerName,
+          phone,
+          address
+        });
 
     if (restaurantError) {
       message.textContent =
@@ -398,7 +593,9 @@
       return;
     }
 
-    message.textContent = "Account created successfully! You can now login.";
+    message.textContent =
+      "Account created successfully! You can now login.";
+
     setTimeout(showLogin, 2000);
   }
 
@@ -409,12 +606,18 @@
 
   async function login() {
 
-    const email = document.getElementById("loginEmail").value.trim();
-    const password = document.getElementById("loginPassword").value;
-    const message = document.getElementById("loginMessage");
+    const email =
+      document.getElementById("loginEmail").value.trim();
+
+    const password =
+      document.getElementById("loginPassword").value;
+
+    const message =
+      document.getElementById("loginMessage");
 
     if (!email || !password) {
-      message.textContent = "Please enter email and password.";
+      message.textContent =
+        "Please enter email and password.";
       return;
     }
 
@@ -443,11 +646,12 @@
 
     currentUser = user;
 
-    const { data: restaurant, error } = await supabaseClient
-      .from("restaurants")
-      .select("*")
-      .eq("owner_id", user.id)
-      .single();
+    const { data: restaurant, error } =
+      await supabaseClient
+        .from("restaurants")
+        .select("*")
+        .eq("owner_id", user.id)
+        .single();
 
     if (error || !restaurant) {
       alert("Restaurant profile not found.");
@@ -456,14 +660,21 @@
 
     currentRestaurant = restaurant;
 
-    document.getElementById("authSection").classList.add("hidden");
-    document.getElementById("dashboardSection").classList.remove("hidden");
+    document.getElementById("authSection")
+      .classList.add("hidden");
 
-    document.getElementById("welcomeRestaurant").textContent =
-      "Welcome to " + restaurant.name;
+    document.getElementById("dashboardSection")
+      .classList.remove("hidden");
 
-    document.getElementById("ownerInfo").textContent =
-      "Owner: " + (restaurant.owner_name || "Restaurant Owner");
+    document.getElementById("welcomeRestaurant")
+      .textContent = "Welcome to " + restaurant.name;
+
+    document.getElementById("ownerInfo")
+      .textContent =
+        "Owner: " +
+        (restaurant.owner_name || "Restaurant Owner");
+
+    await refreshDashboard();
   }
 
 
@@ -474,10 +685,14 @@
   function showTab(tabName, button) {
 
     document.querySelectorAll(".tab-content")
-      .forEach(tab => tab.classList.add("hidden"));
+      .forEach(tab =>
+        tab.classList.add("hidden")
+      );
 
     document.querySelectorAll(".nav-tabs button")
-      .forEach(btn => btn.classList.remove("active"));
+      .forEach(btn =>
+        btn.classList.remove("active")
+      );
 
     document.getElementById(tabName + "Tab")
       .classList.remove("hidden");
@@ -487,6 +702,260 @@
     if (tabName === "menu") {
       loadMenuItems();
     }
+
+    if (tabName === "orders") {
+      loadOrders();
+    }
+
+    if (tabName === "home") {
+      refreshDashboard();
+    }
+  }
+
+
+  // =====================================
+  // DASHBOARD STATS
+  // =====================================
+
+  async function refreshDashboard() {
+
+    if (!currentRestaurant) return;
+
+    const { data, error } =
+      await supabaseClient
+        .from("orders")
+        .select("*")
+        .eq("restaurant_id", currentRestaurant.id);
+
+    if (error) {
+      console.log("Dashboard error:", error);
+      return;
+    }
+
+    const orders = data || [];
+
+    document.getElementById("totalOrders")
+      .textContent = orders.length;
+
+    document.getElementById("pendingOrders")
+      .textContent =
+        orders.filter(order =>
+          (order.status || "pending").toLowerCase() === "pending"
+        ).length;
+
+    document.getElementById("preparingOrders")
+      .textContent =
+        orders.filter(order =>
+          (order.status || "").toLowerCase() === "preparing"
+        ).length;
+
+    document.getElementById("readyOrders")
+      .textContent =
+        orders.filter(order =>
+          (order.status || "").toLowerCase() === "ready"
+        ).length;
+  }
+
+
+  // =====================================
+  // LOAD ORDERS
+  // =====================================
+
+  async function loadOrders() {
+
+    if (!currentRestaurant) return;
+
+    const list =
+      document.getElementById("ordersList");
+
+    list.innerHTML = "Loading orders...";
+
+    const { data: orders, error } =
+      await supabaseClient
+        .from("orders")
+        .select("*")
+        .eq("restaurant_id", currentRestaurant.id)
+        .order("created_at", {
+          ascending: false
+        });
+
+    if (error) {
+      console.log(error);
+      list.innerHTML =
+        "Error loading orders: " +
+        escapeHtml(error.message);
+      return;
+    }
+
+    if (!orders || orders.length === 0) {
+      list.innerHTML =
+        "<p>No customer orders yet.</p>";
+      return;
+    }
+
+    list.innerHTML = "";
+
+    for (const order of orders) {
+
+      const { data: orderItems, error: itemsError } =
+        await supabaseClient
+          .from("order_items")
+          .select("*")
+          .eq("order_id", order.id);
+
+      let itemsHtml =
+        "<div class='order-item'>No item details available.</div>";
+
+      if (!itemsError && orderItems && orderItems.length > 0) {
+
+        itemsHtml = "";
+
+        for (const item of orderItems) {
+
+          let itemName = "Food Item";
+
+          if (item.menu_item_id) {
+
+            const { data: menuItem } =
+              await supabaseClient
+                .from("menu_items")
+                .select("name")
+                .eq("id", item.menu_item_id)
+                .maybeSingle();
+
+            if (menuItem && menuItem.name) {
+              itemName = menuItem.name;
+            }
+          }
+
+          const quantity = item.quantity || 1;
+          const price = Number(item.price || 0);
+
+          itemsHtml += `
+            <div class="order-item">
+              🍔 ${escapeHtml(itemName)}
+              × ${quantity}
+              — ₹${price * quantity}
+            </div>
+          `;
+        }
+      }
+
+      const tableNumber =
+        order.table_number ||
+        order.table ||
+        "Not available";
+
+      const customerName =
+        order.customer_name ||
+        order.name ||
+        "Customer";
+
+      const total =
+        Number(
+          order.total_amount ??
+          order.total ??
+          0
+        );
+
+      const status =
+        (order.status || "pending").toLowerCase();
+
+      let orderDate = "";
+
+      if (order.created_at) {
+        orderDate = new Date(
+          order.created_at
+        ).toLocaleString();
+      }
+
+      list.innerHTML += `
+        <div class="order-card">
+
+          <div class="order-top">
+            <h4>🪑 Table ${escapeHtml(String(tableNumber))}</h4>
+
+            <span class="status-badge">
+              ${escapeHtml(status.toUpperCase())}
+            </span>
+          </div>
+
+          <div class="order-info">
+            👤 Customer: ${escapeHtml(String(customerName))}
+          </div>
+
+          <div class="order-info">
+            🕒 ${escapeHtml(orderDate)}
+          </div>
+
+          <div class="order-items">
+            <strong>🍽️ Order Items</strong>
+            ${itemsHtml}
+          </div>
+
+          <div class="order-total">
+            Total: ₹${total}
+          </div>
+
+          <select
+            class="status-select"
+            onchange="updateOrderStatus('${order.id}', this.value)"
+          >
+            <option value="pending"
+              ${status === "pending" ? "selected" : ""}>
+              ⏳ Pending
+            </option>
+
+            <option value="preparing"
+              ${status === "preparing" ? "selected" : ""}>
+              👨‍🍳 Preparing
+            </option>
+
+            <option value="ready"
+              ${status === "ready" ? "selected" : ""}>
+              ✅ Ready
+            </option>
+
+            <option value="completed"
+              ${status === "completed" ? "selected" : ""}>
+              🎉 Completed
+            </option>
+          </select>
+
+        </div>
+      `;
+    }
+  }
+
+
+  // =====================================
+  // UPDATE ORDER STATUS
+  // =====================================
+
+  async function updateOrderStatus(orderId, newStatus) {
+
+    const { error } =
+      await supabaseClient
+        .from("orders")
+        .update({
+          status: newStatus
+        })
+        .eq("id", orderId)
+        .eq(
+          "restaurant_id",
+          currentRestaurant.id
+        );
+
+    if (error) {
+      alert(
+        "Status update failed: " +
+        error.message
+      );
+      return;
+    }
+
+    await loadOrders();
+    await refreshDashboard();
   }
 
 
@@ -497,47 +966,59 @@
   async function addMenuItem() {
 
     if (!currentRestaurant) {
-      alert("Restaurant not loaded. Please login again.");
+      alert(
+        "Restaurant not loaded. Please login again."
+      );
       return;
     }
 
-    const name = document.getElementById("menuName").value.trim();
+    const name =
+      document.getElementById("menuName").value.trim();
+
     const description =
       document.getElementById("menuDescription").value.trim();
 
     const price =
-      Number(document.getElementById("menuPrice").value);
+      Number(
+        document.getElementById("menuPrice").value
+      );
 
     const category =
-      document.getElementById("menuCategory").value.trim() || "General";
+      document.getElementById("menuCategory")
+        .value.trim() || "General";
 
-    const message = document.getElementById("menuMessage");
+    const message =
+      document.getElementById("menuMessage");
 
-    if (!name || !price || price < 0) {
-      message.textContent = "Please enter a valid item name and price.";
+    if (!name || isNaN(price) || price < 0) {
+      message.textContent =
+        "Please enter a valid item name and price.";
       return;
     }
 
     message.textContent = "Adding item...";
 
-    const { error } = await supabaseClient
-      .from("menu_items")
-      .insert({
-        restaurant_id: currentRestaurant.id,
-        name,
-        description,
-        price,
-        category,
-        is_available: true
-      });
+    const { error } =
+      await supabaseClient
+        .from("menu_items")
+        .insert({
+          restaurant_id: currentRestaurant.id,
+          name,
+          description,
+          price,
+          category,
+          is_available: true
+        });
 
     if (error) {
       console.log(error);
-      message.textContent = "Error: " + error.message;
+      message.textContent =
+        "Error: " + error.message;
       return;
     }
 
-    message.textContent = "✅ Menu item added successfully!";
+    message.textContent =
+      "✅ Menu item added successfully!";
 
     document.getElementById("menuName").value = "";
     document.getElementById("menuDescription").value = "";
@@ -556,23 +1037,33 @@
 
     if (!currentRestaurant) return;
 
-    const list = document.getElementById("adminMenuList");
+    const list =
+      document.getElementById("adminMenuList");
 
     list.innerHTML = "Loading menu...";
 
-    const { data, error } = await supabaseClient
-      .from("menu_items")
-      .select("*")
-      .eq("restaurant_id", currentRestaurant.id)
-      .order("created_at", { ascending: false });
+    const { data, error } =
+      await supabaseClient
+        .from("menu_items")
+        .select("*")
+        .eq(
+          "restaurant_id",
+          currentRestaurant.id
+        )
+        .order("created_at", {
+          ascending: false
+        });
 
     if (error) {
-      list.innerHTML = "Error loading menu: " + error.message;
+      list.innerHTML =
+        "Error loading menu: " +
+        escapeHtml(error.message);
       return;
     }
 
     if (!data || data.length === 0) {
-      list.innerHTML = "<p>No menu items yet.</p>";
+      list.innerHTML =
+        "<p>No menu items yet.</p>";
       return;
     }
 
@@ -581,17 +1072,25 @@
     data.forEach(item => {
 
       const statusClass =
-        item.is_available ? "available" : "unavailable";
+        item.is_available
+          ? "available"
+          : "unavailable";
 
       const statusText =
-        item.is_available ? "Available" : "Unavailable";
+        item.is_available
+          ? "Available"
+          : "Unavailable";
 
       list.innerHTML += `
         <div class="menu-item-admin">
-          <h4>${escapeHtml(item.name)}</h4>
+
+          <h4>
+            ${escapeHtml(item.name)}
+          </h4>
 
           <div class="menu-meta">
-            ${escapeHtml(item.category || "General")} • ₹${item.price}
+            ${escapeHtml(item.category || "General")}
+            • ₹${item.price}
           </div>
 
           <div class="${statusClass}">
@@ -599,14 +1098,25 @@
           </div>
 
           <div class="menu-actions">
-            <button onclick="toggleMenuAvailability('${item.id}', ${item.is_available})">
-              ${item.is_available ? "Make Unavailable" : "Make Available"}
+
+            <button onclick="toggleMenuAvailability(
+              '${item.id}',
+              ${item.is_available}
+            )">
+              ${item.is_available
+                ? "Make Unavailable"
+                : "Make Available"}
             </button>
 
-            <button class="danger" onclick="deleteMenuItem('${item.id}')">
+            <button
+              class="danger"
+              onclick="deleteMenuItem('${item.id}')"
+            >
               Delete
             </button>
+
           </div>
+
         </div>
       `;
     });
@@ -614,18 +1124,25 @@
 
 
   // =====================================
-  // TOGGLE AVAILABILITY
+  // TOGGLE MENU AVAILABILITY
   // =====================================
 
-  async function toggleMenuAvailability(itemId, currentStatus) {
+  async function toggleMenuAvailability(
+    itemId,
+    currentStatus
+  ) {
 
-    const { error } = await supabaseClient
-      .from("menu_items")
-      .update({
-        is_available: !currentStatus
-      })
-      .eq("id", itemId)
-      .eq("restaurant_id", currentRestaurant.id);
+    const { error } =
+      await supabaseClient
+        .from("menu_items")
+        .update({
+          is_available: !currentStatus
+        })
+        .eq("id", itemId)
+        .eq(
+          "restaurant_id",
+          currentRestaurant.id
+        );
 
     if (error) {
       alert("Error: " + error.message);
@@ -648,11 +1165,15 @@
 
     if (!confirmed) return;
 
-    const { error } = await supabaseClient
-      .from("menu_items")
-      .delete()
-      .eq("id", itemId)
-      .eq("restaurant_id", currentRestaurant.id);
+    const { error } =
+      await supabaseClient
+        .from("menu_items")
+        .delete()
+        .eq("id", itemId)
+        .eq(
+          "restaurant_id",
+          currentRestaurant.id
+        );
 
     if (error) {
       alert("Error: " + error.message);
@@ -668,22 +1189,30 @@
   // =====================================
 
   function escapeHtml(text) {
-    const div = document.createElement("div");
-    div.textContent = text || "";
+
+    const div =
+      document.createElement("div");
+
+    div.textContent =
+      text || "";
+
     return div.innerHTML;
   }
 
 
   // =====================================
-  // CHECK EXISTING SESSION
+  // CHECK SESSION
   // =====================================
 
   async function checkSession() {
 
-    const { data } = await supabaseClient.auth.getSession();
+    const { data } =
+      await supabaseClient.auth.getSession();
 
     if (data.session) {
-      await loadDashboard(data.session.user);
+      await loadDashboard(
+        data.session.user
+      );
     }
   }
 
@@ -707,7 +1236,7 @@
   }
 
 
-  // Start
+  // Start App
   checkSession();
 
 </script>
