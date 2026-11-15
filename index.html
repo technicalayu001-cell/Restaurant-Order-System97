@@ -1,619 +1,882 @@
-
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Restaurant Ordering</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restaurant Ordering</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f6f7f9;
+      color: #222;
+    }
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    .header {
+      background: linear-gradient(135deg, #1f7a4d, #145a38);
+      color: white;
+      padding: 22px 16px;
+      text-align: center;
+    }
 
-<style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f5f6fa;color:#222}
-header{background:#171923;color:white;padding:20px 15px;text-align:center}
-header h1{margin:0 0 8px;font-size:25px}
-header p{margin:4px}
-.container{max-width:900px;margin:auto;padding:15px}
-.card{background:white;padding:16px;border-radius:13px;margin:14px 0;box-shadow:0 2px 10px #0000000c}
-h2{font-size:19px;margin:5px 0 14px}
-input,textarea,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:15px;margin:6px 0}
-button{border:0;border-radius:8px;padding:11px 15px;background:#171923;color:white;font-size:14px;cursor:pointer}
-button:disabled{opacity:.5}
-.primary{background:#e85d35}
-.green{background:#16864a}
-.gray{background:#687080}
-.danger{background:#c0392b}
-.categories{display:flex;gap:8px;overflow-x:auto;padding:5px 0 12px}
-.categories button{white-space:nowrap;background:#e9eaf0;color:#222}
-.categories button.active{background:#171923;color:white}
-.menu-item{display:flex;gap:12px;align-items:center;border-bottom:1px solid #eee;padding:13px 0}
-.menu-item:last-child{border:0}
-.food-image{width:82px;height:82px;object-fit:cover;border-radius:10px;background:#eee}
-.food-info{flex:1;min-width:0}
-.food-info h3{font-size:16px;margin:0 0 5px}
-.food-info p{font-size:13px;color:#777;margin:0 0 7px}
-.price{font-weight:bold;color:#16864a}
-.cart-row{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid #eee;padding:10px 0}
-.qty{display:flex;align-items:center;gap:8px}
-.qty button{padding:6px 10px}
-.total-row{display:flex;justify-content:space-between;padding:7px 0}
-.status{padding:12px;border-radius:8px;background:#fff4df;color:#8a5700;font-weight:bold}
-.bill-total{font-size:22px;font-weight:bold;color:#16864a}
-.small{font-size:12px;color:#777}
-.hidden{display:none!important}
-.error{background:#ffe8e8;color:#a00;padding:12px;border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere}
-.success{background:#e6f8ed;color:#176b39;padding:12px;border-radius:8px}
-footer{text-align:center;color:#888;padding:25px;font-size:12px}
-@media(min-width:650px){
-.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}
-}
-</style>
-</head>
+    .header h1 { margin: 0; font-size: 26px; }
+    .header p { margin: 7px 0 0; opacity: .9; }
 
-<body>
+    .table-badge {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 8px 14px;
+      background: rgba(255,255,255,.18);
+      border-radius: 20px;
+      font-weight: bold;
+    }
 
-<header>
-<h1 id="restaurantName">Restaurant</h1>
-<p>Welcome! Order your favourite food.</p>
-<p id="tableLabel">Table --</p>
-</header>
+    .container {
+      max-width: 850px;
+      margin: auto;
+      padding: 15px;
+      padding-bottom: 100px;
+    }
 
-<div class="container">
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 17px;
+      margin-bottom: 16px;
+      box-shadow: 0 3px 14px rgba(0,0,0,.07);
+    }
 
-<div id="pageError" class="error hidden"></div>
+    h2 { margin: 0 0 15px; font-size: 20px; }
 
-<section class="card">
-<h2>🍽️ Our Menu</h2>
-<div id="categories" class="categories"></div>
-<div id="menuList">Loading menu...</div>
-<button class="gray" onclick="loadMenu()">↻ Refresh Menu</button>
-</section>
+    .categories {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+    }
 
-<section class="card">
-<h2>🛒 Your Cart</h2>
-<div id="cartList">Your cart is empty.</div>
-<div class="total-row">
-<strong>Total</strong>
-<strong id="cartTotal">₹0.00</strong>
+    .categories button {
+      white-space: nowrap;
+      border: 1px solid #ddd;
+      background: white;
+      color: #333;
+      padding: 9px 14px;
+      border-radius: 20px;
+    }
+
+    .categories button.active {
+      background: #1f7a4d;
+      color: white;
+      border-color: #1f7a4d;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 12px;
+    }
+
+    .food-card {
+      border: 1px solid #eee;
+      border-radius: 13px;
+      padding: 13px;
+      background: white;
+    }
+
+    .food-image {
+      width: 100%;
+      height: 145px;
+      object-fit: cover;
+      border-radius: 10px;
+      background: #f0f0f0;
+      margin-bottom: 10px;
+    }
+
+    .food-name {
+      font-size: 17px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .food-description {
+      color: #777;
+      font-size: 13px;
+      min-height: 30px;
+    }
+
+    .food-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+      gap: 8px;
+    }
+
+    .price {
+      font-weight: bold;
+      color: #1f7a4d;
+      font-size: 17px;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      border-radius: 9px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .primary { background: #1f7a4d; color: white; }
+    .secondary { background: #e9ecef; color: #222; }
+    .orange { background: #e67e22; color: white; }
+    .full { width: 100%; margin-top: 8px; }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      padding: 11px 0;
+      gap: 8px;
+    }
+
+    .cart-name { flex: 1; }
+
+    .quantity {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .quantity button {
+      padding: 5px 10px;
+      background: #e9ecef;
+      color: #222;
+    }
+
+    .total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 19px;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 9px;
+      font-size: 15px;
+      margin: 6px 0;
+    }
+
+    textarea { resize: vertical; min-height: 75px; }
+
+    .order-tracker {
+      display: flex;
+      justify-content: space-between;
+      gap: 5px;
+      margin: 20px 0 10px;
+    }
+
+    .step {
+      flex: 1;
+      text-align: center;
+      font-size: 11px;
+      color: #999;
+      position: relative;
+    }
+
+    .step .circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #ddd;
+      margin: auto auto 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+
+    .step.active { color: #1f7a4d; font-weight: bold; }
+    .step.active .circle { background: #1f7a4d; }
+
+    .status-box {
+      padding: 12px;
+      background: #eef8f2;
+      color: #176b39;
+      border-radius: 9px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .hidden { display: none !important; }
+
+    .message {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .success { background: #e5f7ec; color: #176b39; }
+    .error { background: #fdeaea; color: #b42318; }
+
+    .waiter-btn {
+      background: #e67e22;
+      color: white;
+      font-size: 16px;
+    }
+
+    .feedback-stars {
+      display: flex;
+      gap: 7px;
+      margin-bottom: 10px;
+    }
+
+    .star {
+      font-size: 30px;
+      cursor: pointer;
+      color: #ddd;
+    }
+
+    .star.selected { color: #f39c12; }
+
+    .footer {
+      text-align: center;
+      color: #888;
+      padding: 20px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 480px) {
+      .menu-grid { grid-template-columns: 1fr; }
+      .header h1 { font-size: 23px; }
+    }
+  </style></head><body><div class="header">
+  <h1 id="restaurantName">Restaurant</h1>
+  <p>Order delicious food from your table</p>
+  <div class="table-badge" id="tableBadge">🪑 Table 1</div>
+</div><div class="container">  <!-- MENU -->  <div class="card">
+    <h2>🍽️ Our Menu</h2>
+    <div class="categories" id="categories"></div>
+    <div id="menuList">Loading menu...</div>
+  </div>  <!-- CART -->  <div class="card">
+    <h2>🛒 Your Order</h2>
+    <div id="cartList">Your cart is empty.</div><div class="total">
+  <span>Total</span>
+  <span id="cartTotal">₹0</span>
 </div>
-<input id="customerName" placeholder="Enter your name">
-<textarea id="orderNotes" placeholder="Special instructions (optional)" rows="2"></textarea>
-<button class="primary" id="orderButton" onclick="placeOrder()" style="width:100%">
-Place Order
+
+<input id="customerName" placeholder="Your name">
+<textarea id="orderNotes" placeholder="Special instructions (optional)"></textarea>
+
+<button class="primary full" id="placeOrderBtn" onclick="placeOrder()">
+  Place Order
 </button>
+
 <div id="orderMessage"></div>
-</section>
 
-<section class="card hidden" id="orderSection">
-<h2>📦 Your Order</h2>
-<p>Order Number: <strong id="orderNumber">-</strong></p>
-<p>Table: <strong id="orderTable">-</strong></p>
-<div class="status" id="orderStatus">Waiting for update...</div>
-<p>Estimated Time: <strong id="estimatedTime">-</strong></p>
-<p class="small">This page updates when the restaurant changes your order status.</p>
-</section>
-
-<section class="card hidden" id="billSection">
-<h2>🧾 Your Bill</h2>
-<div id="billDetails">Checking bill...</div>
-<div id="paymentArea"></div>
-</section>
-
-<section class="card">
-<h2>⭐ Feedback</h2>
-<select id="rating">
-<option value="5">5 - Excellent</option>
-<option value="4">4 - Very Good</option>
-<option value="3">3 - Good</option>
-<option value="2">2 - Average</option>
-<option value="1">1 - Poor</option>
-</select>
-<textarea id="feedbackMessage" placeholder="Write your feedback"></textarea>
-<button class="green" onclick="sendFeedback()">Submit Feedback</button>
-<div id="feedbackResult"></div>
-</section>
-
-<section class="card">
-<h2>📝 Complaint / Help</h2>
-<textarea id="complaintMessage" placeholder="Write your message"></textarea>
-<button class="gray" onclick="sendComplaint()">Send Message</button>
-<div id="complaintResult"></div>
-</section>
-
+  </div>  <!-- ORDER STATUS -->  <div class="card hidden" id="orderSection">
+    <h2>📦 Track Your Order</h2><div class="status-box" id="orderStatus">
+  Order received
 </div>
 
-<footer>Thank you for visiting us ❤️</footer>
+<div class="order-tracker">
+  <div class="step active" id="step-pending">
+    <div class="circle">1</div>
+    Received
+  </div>
+  <div class="step" id="step-preparing">
+    <div class="circle">2</div>
+    Preparing
+  </div>
+  <div class="step" id="step-ready">
+    <div class="circle">3</div>
+    Ready
+  </div>
+  <div class="step" id="step-completed">
+    <div class="circle">4</div>
+    Completed
+  </div>
+</div>
 
-<script>
-const SUPABASE_URL = "https://yravmnkdagtafdazguvl.supabase.co";
+<p style="text-align:center">
+  ⏱️ Estimated time: <strong id="estimatedTime">20 minutes</strong>
+</p>
+
+  </div>  <!-- CALL WAITER -->  <div class="card">
+    <h2>🙋 Need Help?</h2>
+    <p style="color:#666;font-size:14px">Need assistance? Call a waiter to your table.</p>
+    <button class="waiter-btn full" onclick="callWaiter()">
+      📞 Call Waiter
+    </button>
+    <div id="waiterMessage"></div>
+  </div>  <!-- FEEDBACK -->  <div class="card">
+    <h2>⭐ Rate Your Experience</h2><div class="feedback-stars" id="stars">
+  <span class="star" onclick="setRating(1)">★</span>
+  <span class="star" onclick="setRating(2)">★</span>
+  <span class="star" onclick="setRating(3)">★</span>
+  <span class="star" onclick="setRating(4)">★</span>
+  <span class="star" onclick="setRating(5)">★</span>
+</div>
+
+<textarea id="feedbackMessage" placeholder="Tell us about your experience (optional)"></textarea>
+<button class="primary" onclick="sendFeedback()">Submit Feedback</button>
+<div id="feedbackResult"></div>
+
+  </div></div><div class="footer">Thank you for dining with us ❤️</div><script>
+/* ===============================
+   SUPABASE CONFIGURATION
+================================ */
+const SUPABASE_URL = "https://ltpjjckiaaonpetbzfvn.supabase.co";
+
+/* IMPORTANT:
+   Apni Supabase Dashboard ki Publishable key yahan paste karein.
+   Secret key kabhi use na karein.
+*/
 const SUPABASE_KEY = "sb_publishable_EAWWJe0aicdmnT1HQopX_A_nEUkKbyN";
 
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const params = new URLSearchParams(location.search);
+
+/* ===============================
+   RESTAURANT & TABLE
+================================ */
+const DEFAULT_RESTAURANT_ID = "eeb68534-af30-4739-ada4-2ac88827ccbf";
+
+const params = new URLSearchParams(window.location.search);
+const restaurantId = params.get("restaurant") || DEFAULT_RESTAURANT_ID;
 const tableNumber = Number(params.get("table") || 1);
-let restaurantId = params.get("restaurant");
-let restaurantName = "Restaurant";
+
+document.getElementById("tableBadge").textContent = "🪑 Table " + tableNumber;
+
+
+/* ===============================
+   CUSTOMER TOKEN
+================================ */
+let customerToken = localStorage.getItem("restaurant_customer_token");
+
+if (!customerToken) {
+  customerToken = crypto.randomUUID();
+  localStorage.setItem("restaurant_customer_token", customerToken);
+}
+
+
+/* ===============================
+   VARIABLES
+================================ */
 let menuItems = [];
 let cart = {};
 let activeCategory = "All";
 let currentOrder = null;
-let customerToken = localStorage.getItem("restaurant_customer_token");
+let selectedRating = 5;
 
-function makeToken(){
-  if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{
-    const r=Math.random()*16|0;
-    return (c==="x"?r:(r&3|8)).toString(16);
-  });
+
+/* ===============================
+   START APP
+================================ */
+async function startApp() {
+  await loadRestaurant();
+  await loadMenu();
 }
 
-if(!customerToken){
-  customerToken = makeToken();
-  localStorage.setItem("restaurant_customer_token",customerToken);
+
+/* ===============================
+   RESTAURANT
+================================ */
+async function loadRestaurant() {
+  try {
+    const { data, error } = await db
+      .from("restaurants")
+      .select("name")
+      .eq("id", restaurantId)
+      .maybeSingle();
+
+    if (!error && data) {
+      document.getElementById("restaurantName").textContent =
+        data.name || "Restaurant";
+    }
+  } catch (e) {
+    console.log(e);
+  }
 }
 
-function escapeHTML(value){
-  return String(value ?? "").replace(/[&<>"']/g,c=>({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[c]));
-}
 
-function showError(message){
-  const box=document.getElementById("pageError");
-  box.textContent=message;
-  box.classList.remove("hidden");
-}
+/* ===============================
+   MENU
+================================ */
+async function loadMenu() {
+  const menuBox = document.getElementById("menuList");
+  menuBox.innerHTML = "Loading menu...";
 
-function hideError(){
-  document.getElementById("pageError").classList.add("hidden");
-}
+  const { data, error } = await db
+    .from("menu_items")
+    .select("*")
+    .eq("restaurant_id", restaurantId)
+    .eq("is_available", true)
+    .order("created_at", { ascending: false });
 
-function money(value){
-  return "₹"+Number(value||0).toFixed(2);
-}
-
-async function startApp(){
-  if(!Number.isInteger(tableNumber) || tableNumber<1){
-    showError("Invalid table number. Please scan the correct QR code.");
+  if (error) {
+    menuBox.innerHTML =
+      '<div class="message error">Menu could not be loaded: ' +
+      error.message + '</div>';
     return;
   }
 
-  document.getElementById("tableLabel").textContent="🪑 Table "+tableNumber;
-
-  try{
-    if(!restaurantId){
-      const {data,error}=await db
-        .from("restaurants")
-        .select("id,name")
-        .limit(1)
-        .maybeSingle();
-
-      if(error) throw error;
-      if(!data) throw new Error("Restaurant not found. Please check the restaurant QR URL.");
-
-      restaurantId=data.id;
-    }
-
-    const {data:restaurant,error:restaurantError}=await db
-      .from("restaurants")
-      .select("id,name")
-      .eq("id",restaurantId)
-      .maybeSingle();
-
-    if(!restaurantError && restaurant){
-      restaurantName=restaurant.name || "Restaurant";
-    }
-
-    document.getElementById("restaurantName").textContent=restaurantName;
-
-    await loadMenu();
-    await loadPaymentSettings();
-
-  }catch(error){
-    showError("Restaurant could not be loaded.\n"+error.message);
-  }
-}
-
-async function loadMenu(){
-  hideError();
-  const list=document.getElementById("menuList");
-  list.textContent="Loading menu...";
-
-  try{
-    if(!restaurantId) throw new Error("Restaurant ID is missing.");
-
-    const {data,error}=await db
-      .from("menu_items")
-      .select("id,restaurant_id,name,description,price,category,image_url,is_available")
-      .eq("restaurant_id",restaurantId)
-      .eq("is_available",true)
-      .order("name");
-
-    if(error) throw error;
-
-    menuItems=data || [];
-    renderCategories();
-    renderMenu();
-
-    if(menuItems.length===0){
-      list.innerHTML="<p>No available food items right now.</p>";
-    }
-
-  }catch(error){
-    list.innerHTML="";
-    showError("Menu could not be loaded.\n"+error.message);
-  }
-}
-
-function renderCategories(){
-  const categories=["All",...new Set(menuItems.map(x=>x.category||"Other"))];
-  document.getElementById("categories").innerHTML=categories.map(cat=>
-    `<button class="${activeCategory===cat?'active':''}"
-    onclick="chooseCategory('${escapeHTML(cat)}')">${escapeHTML(cat)}</button>`
-  ).join("");
-}
-
-function chooseCategory(category){
-  activeCategory=category;
+  menuItems = data || [];
   renderCategories();
   renderMenu();
 }
 
-function renderMenu(){
-  const filtered=activeCategory==="All"
+
+function renderCategories() {
+  const categories = [
+    "All",
+    ...new Set(menuItems.map(item => item.category || "Other"))
+  ];
+
+  document.getElementById("categories").innerHTML =
+    categories.map(category => `
+      <button
+        class="${category === activeCategory ? "active" : ""}"
+        onclick="selectCategory(${JSON.stringify(category)})">
+        ${category}
+      </button>
+    `).join("");
+}
+
+
+function selectCategory(category) {
+  activeCategory = category;
+  renderCategories();
+  renderMenu();
+}
+
+
+function renderMenu() {
+  const menuBox = document.getElementById("menuList");
+
+  const items = activeCategory === "All"
     ? menuItems
-    : menuItems.filter(x=>(x.category||"Other")===activeCategory);
+    : menuItems.filter(item =>
+        (item.category || "Other") === activeCategory
+      );
 
-  const list=document.getElementById("menuList");
-
-  if(!filtered.length){
-    list.innerHTML="<p>No items in this category.</p>";
+  if (!items.length) {
+    menuBox.innerHTML =
+      '<p style="color:#777">No food items available right now.</p>';
     return;
   }
 
-  list.innerHTML='<div class="menu-grid">'+filtered.map(item=>`
-    <div class="menu-item">
-      ${item.image_url
-        ? `<img class="food-image" src="${escapeHTML(item.image_url)}" onerror="this.style.display='none'">`
-        : `<div class="food-image"></div>`}
-      <div class="food-info">
-        <h3>${escapeHTML(item.name)}</h3>
-        <p>${escapeHTML(item.description||"")}</p>
-        <div class="price">${money(item.price)}</div>
-      </div>
-      <button class="primary" onclick="addToCart('${item.id}')">Add +</button>
+  menuBox.innerHTML = `
+    <div class="menu-grid">
+      ${items.map(item => `
+        <div class="food-card">
+
+          ${item.image_url
+            ? `<img class="food-image"
+                    src="${item.image_url}"
+                    alt="${item.name}">`
+            : `<div class="food-image"></div>`
+          }
+
+          <div class="food-name">${item.name}</div>
+
+          <div class="food-description">
+            ${item.description || ""}
+          </div>
+
+          <div class="food-bottom">
+            <span class="price">₹${Number(item.price).toFixed(0)}</span>
+
+            <button class="primary"
+              onclick="addToCart('${item.id}')">
+              + Add
+            </button>
+          </div>
+
+        </div>
+      `).join("")}
     </div>
-  `).join("")+'</div>';
+  `;
 }
 
-function addToCart(id){
-  const item=menuItems.find(x=>x.id===id);
-  if(!item)return;
 
-  if(!cart[id]) cart[id]={item:item,quantity:0};
-  cart[id].quantity++;
+/* ===============================
+   CART
+================================ */
+function addToCart(itemId) {
+  const item = menuItems.find(i => i.id === itemId);
+  if (!item) return;
+
+  if (!cart[itemId]) {
+    cart[itemId] = {
+      item: item,
+      quantity: 0
+    };
+  }
+
+  cart[itemId].quantity++;
   renderCart();
 }
 
-function changeQuantity(id,amount){
-  if(!cart[id])return;
-  cart[id].quantity+=amount;
-  if(cart[id].quantity<=0)delete cart[id];
+
+function changeQuantity(itemId, change) {
+  if (!cart[itemId]) return;
+
+  cart[itemId].quantity += change;
+
+  if (cart[itemId].quantity <= 0) {
+    delete cart[itemId];
+  }
+
   renderCart();
 }
 
-function renderCart(){
-  const list=document.getElementById("cartList");
-  const entries=Object.values(cart);
 
-  if(!entries.length){
-    list.textContent="Your cart is empty.";
-    document.getElementById("cartTotal").textContent=money(0);
+function renderCart() {
+  const cartBox = document.getElementById("cartList");
+  const entries = Object.values(cart);
+
+  if (!entries.length) {
+    cartBox.innerHTML = "Your cart is empty.";
+    document.getElementById("cartTotal").textContent = "₹0";
     return;
   }
 
-  let total=0;
+  let total = 0;
 
-  list.innerHTML=entries.map(row=>{
-    const subtotal=Number(row.item.price)*row.quantity;
-    total+=subtotal;
+  cartBox.innerHTML = entries.map(row => {
+    const itemTotal =
+      Number(row.item.price) * row.quantity;
+
+    total += itemTotal;
 
     return `
-      <div class="cart-row">
-        <div>
-          <strong>${escapeHTML(row.item.name)}</strong>
-          <div class="small">${money(row.item.price)} each</div>
+      <div class="cart-item">
+
+        <div class="cart-name">
+          <strong>${row.item.name}</strong><br>
+          <small>₹${row.item.price} each</small>
         </div>
-        <div class="qty">
-          <button onclick="changeQuantity('${row.item.id}',-1)">−</button>
+
+        <div class="quantity">
+          <button onclick="changeQuantity('${row.item.id}', -1)">−</button>
+
           <strong>${row.quantity}</strong>
-          <button onclick="changeQuantity('${row.item.id}',1)">+</button>
+
+          <button onclick="changeQuantity('${row.item.id}', 1)">+</button>
         </div>
-        <strong>${money(subtotal)}</strong>
-      </div>`;
+
+        <strong>₹${itemTotal.toFixed(0)}</strong>
+
+      </div>
+    `;
   }).join("");
 
-  document.getElementById("cartTotal").textContent=money(total);
+  document.getElementById("cartTotal").textContent =
+    "₹" + total.toFixed(0);
 }
 
-async function placeOrder(){
-  const entries=Object.values(cart);
-  if(!entries.length){
-    alert("Please add food items to your cart.");
+
+/* ===============================
+   PLACE ORDER
+================================ */
+async function placeOrder() {
+
+  const entries = Object.values(cart);
+
+  if (!entries.length) {
+    showMessage("orderMessage",
+      "Please add food items first.", "error");
     return;
   }
 
-  const customerName=document.getElementById("customerName").value.trim();
-  if(!customerName){
-    alert("Please enter your name.");
+  const customerName =
+    document.getElementById("customerName").value.trim();
+
+  if (!customerName) {
+    showMessage("orderMessage",
+      "Please enter your name.", "error");
     return;
   }
 
-  const button=document.getElementById("orderButton");
-  button.disabled=true;
-  button.textContent="Placing Order...";
+  const button =
+    document.getElementById("placeOrderBtn");
 
-  try{
-    const total=entries.reduce((sum,row)=>
-      sum+Number(row.item.price)*row.quantity,0);
+  button.disabled = true;
+  button.textContent = "Placing Order...";
 
-    let tableId=null;
+  try {
 
-    const {data:tableData,error:tableError}=await db
+    const total = entries.reduce(
+      (sum, row) =>
+        sum + Number(row.item.price) * row.quantity,
+      0
+    );
+
+    const { data: tableData } = await db
       .from("restaurant_tables")
       .select("id")
-      .eq("restaurant_id",restaurantId)
-      .eq("table_number",tableNumber)
+      .eq("restaurant_id", restaurantId)
+      .eq("table_number", tableNumber)
       .maybeSingle();
 
-    if(tableError) console.warn("Table lookup:",tableError.message);
-    if(tableData) tableId=tableData.id;
-
-    const orderData={
-      restaurant_id:restaurantId,
-      table_number:tableNumber,
-      customer_name:customerName,
-      status:"pending",
-      estimated_time:20,
-      total_amount:total,
-      customer_token:customerToken,
-      notes:document.getElementById("orderNotes").value.trim()
+    const orderData = {
+      restaurant_id: restaurantId,
+      table_number: tableNumber,
+      table_id: tableData ? tableData.id : null,
+      customer_name: customerName,
+      status: "pending",
+      estimated_time: 20,
+      total_amount: total,
+      customer_token: customerToken,
+      notes: document.getElementById("orderNotes").value.trim()
     };
 
-    if(tableId) orderData.table_id=tableId;
-
-    const {data:order,error:orderError}=await db
+    const { data: order, error: orderError } = await db
       .from("orders")
       .insert(orderData)
-      .select("id,order_number,status,estimated_time,total_amount,created_at")
+      .select()
       .single();
 
-    if(orderError) throw orderError;
+    if (orderError) throw orderError;
 
-    const orderRows=entries.map(row=>({
-      order_id:order.id,
-      menu_item_id:row.item.id,
-      quantity:row.quantity,
-      price:Number(row.item.price)
+
+    const items = entries.map(row => ({
+      order_id: order.id,
+      menu_item_id: row.item.id,
+      quantity: row.quantity,
+      price: Number(row.item.price)
     }));
 
-    const {error:itemError}=await db
+    const { error: itemError } = await db
       .from("order_items")
-      .insert(orderRows);
+      .insert(items);
 
-    if(itemError){
-      throw new Error("Order was created, but its food items could not be saved: "+itemError.message);
-    }
+    if (itemError) throw itemError;
 
-    currentOrder=order;
-    cart={};
+
+    currentOrder = order;
+
+    cart = {};
     renderCart();
 
-    document.getElementById("orderMessage").innerHTML=
-      '<div class="success">Order placed successfully!</div>';
+    showMessage("orderMessage",
+      "🎉 Your order has been placed successfully!",
+      "success");
 
-    document.getElementById("orderSection").classList.remove("hidden");
-    document.getElementById("orderNumber").textContent=order.order_number||order.id;
-    document.getElementById("orderTable").textContent=tableNumber;
+    document.getElementById("orderSection")
+      .classList.remove("hidden");
 
-    await refreshOrder();
+    updateOrderUI(order);
+
     subscribeToOrder();
 
-    document.getElementById("orderSection").scrollIntoView({behavior:"smooth"});
+  } catch (error) {
 
-  }catch(error){
-    document.getElementById("orderMessage").innerHTML=
-      `<div class="error">${escapeHTML(error.message)}</div>`;
-  }finally{
-    button.disabled=false;
-    button.textContent="Place Order";
+    showMessage("orderMessage",
+      "Order could not be placed: " + error.message,
+      "error");
+
+  } finally {
+
+    button.disabled = false;
+    button.textContent = "Place Order";
   }
 }
 
-function statusText(status){
-  const labels={
-    pending:"⏳ Order received - Waiting for restaurant",
-    accepted:"✅ Order accepted",
-    preparing:"👨‍🍳 Your food is being prepared",
-    ready:"🍽️ Your order is ready",
-    delivered:"✅ Order completed",
-    completed:"✅ Order completed",
-    cancelled:"Order cancelled"
+
+/* ===============================
+   ORDER STATUS
+================================ */
+function updateOrderUI(order) {
+
+  const status = order.status || "pending";
+
+  const statusNames = {
+    pending: "⏳ Order Received",
+    accepted: "✅ Order Accepted",
+    preparing: "👨‍🍳 Food is being prepared",
+    ready: "🍽️ Your food is ready",
+    completed: "🎉 Order Completed"
   };
-  return labels[status]||status||"Waiting for update";
+
+  document.getElementById("orderStatus").textContent =
+    statusNames[status] || status;
+
+  document.getElementById("estimatedTime").textContent =
+    order.estimated_time
+      ? order.estimated_time + " minutes"
+      : "Updating...";
+
+  const steps = [
+    "pending",
+    "preparing",
+    "ready",
+    "completed"
+  ];
+
+  let currentIndex = steps.indexOf(status);
+
+  if (status === "accepted") currentIndex = 0;
+
+  steps.forEach((step, index) => {
+    document.getElementById("step-" + step)
+      .classList.toggle("active",
+        index <= currentIndex);
+  });
 }
 
-async function refreshOrder(){
-  if(!currentOrder)return;
 
-  const {data,error}=await db
-    .from("orders")
-    .select("id,order_number,status,estimated_time,total_amount,bill_status,payment_status")
-    .eq("id",currentOrder.id)
-    .maybeSingle();
+/* ===============================
+   REALTIME ORDER UPDATE
+================================ */
+let orderChannel;
 
-  if(error){
-    console.warn("Order refresh:",error.message);
-    return;
+function subscribeToOrder() {
+
+  if (!currentOrder) return;
+
+  if (orderChannel) {
+    db.removeChannel(orderChannel);
   }
 
-  if(data){
-    currentOrder={...currentOrder,...data};
-    document.getElementById("orderStatus").textContent=statusText(data.status);
-    document.getElementById("estimatedTime").textContent=
-      data.estimated_time ? data.estimated_time+" minutes" : "Not updated";
+  orderChannel = db
+    .channel("order-" + currentOrder.id)
 
-    await refreshBill();
-  }
-}
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: "orders",
+        filter: "id=eq." + currentOrder.id
+      },
+      payload => {
+        currentOrder = payload.new;
+        updateOrderUI(currentOrder);
+      }
+    )
 
-let realtimeChannel=null;
-
-function subscribeToOrder(){
-  if(!currentOrder)return;
-
-  if(realtimeChannel){
-    db.removeChannel(realtimeChannel);
-  }
-
-  realtimeChannel=db.channel("customer-order-"+currentOrder.id)
-    .on("postgres_changes",{
-      event:"*",
-      schema:"public",
-      table:"orders",
-      filter:"id=eq."+currentOrder.id
-    },()=>refreshOrder())
-    .on("postgres_changes",{
-      event:"*",
-      schema:"public",
-      table:"bills",
-      filter:"order_id=eq."+currentOrder.id
-    },()=>refreshBill())
     .subscribe();
 }
 
-async function refreshBill(){
-  if(!currentOrder)return;
 
-  const {data:bill,error}=await db
-    .from("bills")
-    .select("*")
-    .eq("order_id",currentOrder.id)
-    .maybeSingle();
+/* ===============================
+   CALL WAITER
+================================ */
+async function callWaiter() {
 
-  if(error){
-    console.warn("Bill lookup:",error.message);
-    return;
-  }
+  const button = event.target;
+  button.disabled = true;
+  button.textContent = "Calling...";
 
-  if(!bill){
-    document.getElementById("billSection").classList.add("hidden");
-    return;
-  }
+  try {
 
-  document.getElementById("billSection").classList.remove("hidden");
+    const { error } = await db
+      .from("waiter_calls")
+      .insert({
+        restaurant_id: restaurantId,
+        table_number: tableNumber,
+        customer_token: customerToken
+      });
 
-  const subtotal=Number(bill.subtotal||0);
-  const tax=Number(bill.tax_amount||0);
-  const service=Number(bill.service_charge_amount||0);
-  const total=Number(bill.total_amount||0);
+    if (error) throw error;
 
-  document.getElementById("billDetails").innerHTML=`
-    <p>Bill Number: <strong>${escapeHTML(bill.bill_number||"-")}</strong></p>
-    <div class="total-row"><span>Subtotal</span><strong>${money(subtotal)}</strong></div>
-    <div class="total-row"><span>Tax (${Number(bill.tax_percent||0)}%)</span><strong>${money(tax)}</strong></div>
-    <div class="total-row"><span>Service Charge (${Number(bill.service_charge_percent||0)}%)</span><strong>${money(service)}</strong></div>
-    <hr>
-    <div class="total-row"><strong>Total Amount</strong><span class="bill-total">${money(total)}</span></div>
-    <p>Payment Status: <strong>${escapeHTML(bill.payment_status||"Pending")}</strong></p>
-  `;
+    showMessage("waiterMessage",
+      "✅ Waiter has been notified for Table " +
+      tableNumber + ".",
+      "success");
 
-  const payment=document.getElementById("paymentArea");
-  payment.innerHTML="";
+  } catch (error) {
 
-  if(String(bill.payment_status||"").toLowerCase()!=="paid"){
-    if(paymentSettings && paymentSettings.upi_id){
-      const upi="upi://pay?pa="+encodeURIComponent(paymentSettings.upi_id)+
-        "&pn="+encodeURIComponent(restaurantName)+
-        "&am="+encodeURIComponent(total.toFixed(2))+
-        "&cu=INR";
+    showMessage("waiterMessage",
+      "Could not call waiter: " + error.message,
+      "error");
 
-      payment.innerHTML=`
-        <p>Pay using UPI</p>
-        <p class="small">UPI ID: ${escapeHTML(paymentSettings.upi_id)}</p>
-        <a href="${upi}"><button class="green">Pay ${money(total)} using UPI</button></a>
-      `;
+  } finally {
 
-      if(paymentSettings.qr_image_url){
-        payment.innerHTML+=`<p>Or scan this QR code:</p>
-        <img src="${escapeHTML(paymentSettings.qr_image_url)}" style="width:190px;max-width:100%">`;
-      }
-    }else{
-      payment.innerHTML="<p>Payment details are not available yet. Please contact the restaurant.</p>";
-    }
+    button.disabled = false;
+    button.textContent = "📞 Call Waiter";
   }
 }
 
-let paymentSettings=null;
 
-async function loadPaymentSettings(){
-  const {data,error}=await db
-    .from("payment_settings")
-    .select("upi_id,qr_image_url,tax_percent,service_charge_percent,payment_enabled")
-    .eq("restaurant_id",restaurantId)
-    .maybeSingle();
+/* ===============================
+   FEEDBACK
+================================ */
+function setRating(rating) {
 
-  if(error){
-    console.warn("Payment settings:",error.message);
-    return;
+  selectedRating = rating;
+
+  document.querySelectorAll(".star")
+    .forEach((star, index) => {
+
+      star.classList.toggle(
+        "selected",
+        index < rating
+      );
+
+    });
+}
+
+
+setRating(5);
+
+
+async function sendFeedback() {
+
+  try {
+
+    const { error } = await db
+      .from("feedback")
+      .insert({
+        restaurant_id: restaurantId,
+        table_number: tableNumber,
+        rating: selectedRating,
+        message: document
+          .getElementById("feedbackMessage")
+          .value.trim(),
+        customer_token: customerToken
+      });
+
+    if (error) throw error;
+
+    document.getElementById("feedbackMessage").value = "";
+
+    showMessage("feedbackResult",
+      "Thank you for your feedback! ⭐",
+      "success");
+
+  } catch (error) {
+
+    showMessage("feedbackResult",
+      "Feedback could not be submitted: " +
+      error.message,
+      "error");
   }
-
-  paymentSettings=data;
 }
 
-async function sendFeedback(){
-  const message=document.getElementById("feedbackMessage").value.trim();
 
-  const {error}=await db.from("feedback").insert({
-    restaurant_id:restaurantId,
-    table_number:tableNumber,
-    rating:Number(document.getElementById("rating").value),
-    message:message,
-    customer_token:customerToken
-  });
+/* ===============================
+   HELPER
+================================ */
+function showMessage(id, message, type) {
 
-  document.getElementById("feedbackResult").textContent=
-    error ? "Could not submit feedback: "+error.message : "Thank you for your feedback!";
+  const box = document.getElementById(id);
+
+  box.className = "message " + type;
+  box.textContent = message;
 }
 
-async function sendComplaint(){
-  const message=document.getElementById("complaintMessage").value.trim();
-  if(!message){
-    alert("Please write your message.");
-    return;
-  }
 
-  const {error}=await db.from("complaints").insert({
-    restaurant_id:restaurantId,
-    table_number:tableNumber,
-    message:message,
-    status:"pending",
-    customer_token:customerToken
-  });
-
-  document.getElementById("complaintResult").textContent=
-    error ? "Could not send: "+error.message : "Your message has been sent.";
-}
-
+// Start
 startApp();
-
-// Keep checking order and bill while this page is open.
-setInterval(()=>{
-  if(currentOrder) refreshOrder();
-},15000);
-
-</script>
-</body>
+</script></body>
 </html>
