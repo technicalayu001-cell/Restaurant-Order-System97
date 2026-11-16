@@ -1,1245 +1,352 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Restaurant Admin</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
-    }
-
-    body {
-      margin: 0;
-      background: #f4f6f8;
-      color: #222;
-    }
-
-    .header {
-      background: #1f7a4d;
-      color: white;
-      padding: 18px;
-      text-align: center;
-    }
-
-    .header h1 {
-      margin: 0;
-      font-size: 23px;
-    }
-
-    .header p {
-      margin: 6px 0 0;
-      font-size: 13px;
-    }
-
-    .container {
-      max-width: 450px;
-      margin: 30px auto;
-      padding: 16px;
-    }
-
-    .dashboard {
-      max-width: 1000px;
-      margin: 20px auto;
-      padding: 16px;
-    }
-
-    .card, .welcome-card {
-      background: white;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 3px 15px rgba(0,0,0,.08);
-      margin-bottom: 15px;
-    }
-
-    h2, h3, h4 {
-      margin-top: 0;
-    }
-
-    input, textarea, select {
-      width: 100%;
-      padding: 12px;
-      margin: 7px 0;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 15px;
-      background: white;
-    }
-
-    textarea {
-      min-height: 80px;
-      resize: vertical;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      background: #1f7a4d;
-      color: white;
-      font-size: 15px;
-      font-weight: bold;
-      margin-top: 8px;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      opacity: .6;
-      cursor: not-allowed;
-    }
-
-    .secondary {
-      background: #e9ecef;
-      color: #222;
-    }
-
-    .danger {
-      background: #c0392b;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .message {
-      margin-top: 12px;
-      text-align: center;
-      font-size: 14px;
-      min-height: 20px;
-    }
-
-    /* Navigation */
-
-    .nav-tabs {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      margin-bottom: 18px;
-      padding-bottom: 3px;
-    }
-
-    .nav-tabs button {
-      width: auto;
-      white-space: nowrap;
-      margin: 0;
-      padding: 10px 15px;
-      background: white;
-      color: #222;
-      border: 1px solid #ddd;
-    }
-
-    .nav-tabs button.active {
-      background: #1f7a4d;
-      color: white;
-      border-color: #1f7a4d;
-    }
-
-    /* Dashboard stats */
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-
-    .stat-card {
-      background: white;
-      padding: 18px;
-      border-radius: 14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.06);
-    }
-
-    .stat-card span {
-      display: block;
-      color: #666;
-      font-size: 13px;
-      margin-bottom: 8px;
-    }
-
-    .stat-card strong {
-      font-size: 24px;
-      color: #1f7a4d;
-    }
-
-    /* Orders */
-
-    .order-card {
-      background: white;
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.07);
-      border-left: 5px solid #1f7a4d;
-    }
-
-    .order-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    .order-top h4 {
-      margin: 0;
-    }
-
-    .status-badge {
-      padding: 6px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: bold;
-      background: #e9ecef;
-    }
-
-    .order-info {
-      font-size: 14px;
-      color: #555;
-      margin: 6px 0;
-    }
-
-    .order-items {
-      background: #f7f8f9;
-      border-radius: 8px;
-      padding: 10px;
-      margin: 10px 0;
-    }
-
-    .order-item {
-      padding: 5px 0;
-      font-size: 14px;
-      border-bottom: 1px solid #e5e5e5;
-    }
-
-    .order-item:last-child {
-      border-bottom: none;
-    }
-
-    .order-total {
-      font-size: 18px;
-      font-weight: bold;
-      color: #1f7a4d;
-      margin: 10px 0;
-    }
-
-    .status-select {
-      margin-top: 8px;
-    }
-
-    /* Menu */
-
-    .menu-item-admin {
-      background: #fff;
-      border: 1px solid #eee;
-      padding: 14px;
-      border-radius: 10px;
-      margin-top: 10px;
-    }
-
-    .menu-item-admin h4 {
-      margin: 0 0 5px;
-    }
-
-    .menu-meta {
-      color: #666;
-      font-size: 13px;
-      margin-bottom: 8px;
-    }
-
-    .menu-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .menu-actions button {
-      width: auto;
-      margin: 0;
-      padding: 8px 12px;
-      font-size: 13px;
-    }
-
-    .available {
-      color: #1f7a4d;
-      font-weight: bold;
-    }
-
-    .unavailable {
-      color: #c0392b;
-      font-weight: bold;
-    }
-
-    .refresh-btn {
-      width: auto;
-      padding: 9px 15px;
-      margin: 0 0 12px;
-    }
-
-    @media (max-width: 500px) {
-      .dashboard {
-        padding: 12px;
-      }
-
-      .order-top {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Restaurant Admin Panel</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f6fa;color:#202938}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+#login{max-width:390px;margin:70px auto;background:white;padding:25px;border-radius:15px;box-shadow:0 5px 25px #0001}
+#login input{width:100%;padding:13px;margin:8px 0;border:1px solid #ddd;border-radius:8px}
+.primary{background:#2563eb;color:white;border:0;padding:11px 16px;border-radius:8px}
+.secondary{background:#e8eefc;color:#234b9b;border:0;padding:9px 13px;border-radius:7px}
+.danger{background:#fee2e2;color:#b91c1c;border:0;padding:8px 12px;border-radius:7px}
+#app{display:none}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:235px;background:#17243a;color:white;padding:18px 12px;overflow-y:auto;z-index:5}
+.brand{font-size:20px;font-weight:bold;padding:12px 10px 20px}
+.sidebar button{width:100%;display:block;text-align:left;padding:12px 13px;margin:3px 0;background:transparent;color:#d5deed;border:0;border-radius:8px}
+.sidebar button.active,.sidebar button:hover{background:#2d4161;color:white}
+.main{margin-left:235px;padding:24px;max-width:1500px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px}
+.top h2{margin:0}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr));gap:14px;margin-bottom:20px}
+.card,.panel{background:white;border-radius:12px;padding:17px;box-shadow:0 2px 10px #00000008;margin-bottom:15px}
+.card small{color:#697586}
+.card h2{margin:10px 0 0;font-size:25px}
+.panel h3{margin:0 0 15px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.field{margin:10px 0}
+.field label{display:block;font-size:13px;font-weight:bold;margin-bottom:6px}
+.field input,.field textarea,.field select{width:100%;padding:11px;border:1px solid #d9dee8;border-radius:8px;background:white}
+.field textarea{min-height:75px}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:650px}
+th,td{text-align:left;padding:11px;border-bottom:1px solid #edf0f4;font-size:13px}
+th{background:#f8fafc}
+.tag{padding:5px 8px;background:#eaf0ff;border-radius:20px;font-size:12px}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.muted{color:#718096;font-size:13px}
+.notice{padding:12px;background:#fff7df;border-radius:8px;margin:10px 0;color:#805b00}
+#content h2{margin-top:0}
+.hidden{display:none!important}
+.qr{width:130px;height:130px;object-fit:contain}
+@media(max-width:700px){
+ .sidebar{width:68px;padding:12px 6px}
+ .brand{font-size:0;padding:10px 0}
+ .brand:after{content:"🍽️";font-size:25px}
+ .sidebar button{font-size:0;text-align:center;padding:13px 3px}
+ .sidebar button:before{font-size:19px}
+ .sidebar button[data-icon]:before{content:attr(data-icon)}
+ .main{margin-left:68px;padding:13px}
+ .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .card{padding:12px}
+ .card h2{font-size:21px}
+ .grid2,.formgrid{grid-template-columns:1fr}
+ .top h2{font-size:19px}
+}
+</style>
 </head>
-
 <body>
 
-<div class="header">
-  <h1>🍽️ Restaurant Admin</h1>
-  <p>Manage your restaurant</p>
+<div id="login">
+ <h2>🍽️ Restaurant Admin</h2>
+ <p class="muted">Login to manage your restaurant</p>
+ <input id="email" type="email" placeholder="Email address">
+ <input id="password" type="password" placeholder="Password">
+ <button class="primary" style="width:100%" onclick="login()">Login</button>
+ <p id="loginMsg" class="muted"></p>
 </div>
 
+<div id="app">
+ <aside class="sidebar">
+  <div class="brand">🍽️ Restaurant Admin</div>
+  <button data-icon="📊" class="active" onclick="showPage('dashboard',this)">Dashboard</button>
+  <button data-icon="📦" onclick="showPage('orders',this)">Orders</button>
+  <button data-icon="🍔" onclick="showPage('menu',this)">Menu</button>
+  <button data-icon="🪑" onclick="showPage('tables',this)">Tables & QR</button>
+  <button data-icon="🔔" onclick="showPage('waiter',this)">Waiter Calls</button>
+  <button data-icon="📢" onclick="showPage('complaints',this)">Complaints</button>
+  <button data-icon="⭐" onclick="showPage('feedback',this)">Feedback</button>
+  <button data-icon="🧾" onclick="showPage('billing',this)">Billing</button>
+  <button data-icon="💳" onclick="showPage('payments',this)">Payments</button>
+  <button data-icon="🎁" onclick="showPage('offers',this)">Offers</button>
+  <button data-icon="👥" onclick="showPage('staff',this)">Staff</button>
+  <button data-icon="📈" onclick="showPage('analytics',this)">Analytics</button>
+  <button data-icon="⚙️" onclick="showPage('settings',this)">Settings</button>
+  <button data-icon="🚪" onclick="logout()">Logout</button>
+ </aside>
 
-<!-- ================= AUTH ================= -->
-
-<div class="container" id="authSection">
-
-  <div class="card" id="loginCard">
-    <h2>Admin Login</h2>
-
-    <input type="email" id="loginEmail" placeholder="Email address">
-    <input type="password" id="loginPassword" placeholder="Password">
-
-    <button onclick="login()">Login</button>
-
-    <button class="secondary" onclick="showSignup()">
-      Create New Restaurant Account
-    </button>
-
-    <div class="message" id="loginMessage"></div>
+ <main class="main">
+  <div class="top">
+   <div>
+    <h2 id="pageTitle">Dashboard</h2>
+    <div class="muted" id="restaurantName">Restaurant Admin Panel</div>
+   </div>
+   <button class="secondary" onclick="refreshPage()">↻ Refresh</button>
   </div>
-
-
-  <div class="card hidden" id="signupCard">
-    <h2>Create Restaurant Account</h2>
-
-    <input type="text" id="restaurantName" placeholder="Restaurant Name">
-    <input type="text" id="ownerName" placeholder="Owner Name">
-    <input type="tel" id="phone" placeholder="Phone Number">
-    <input type="text" id="address" placeholder="Restaurant Address">
-    <input type="email" id="signupEmail" placeholder="Email address">
-    <input type="password" id="signupPassword" placeholder="Create Password">
-
-    <button onclick="signup()">Create Account</button>
-
-    <button class="secondary" onclick="showLogin()">
-      Already have an account? Login
-    </button>
-
-    <div class="message" id="signupMessage"></div>
-  </div>
-
+  <div id="content">Loading...</div>
+ </main>
 </div>
-
-
-<!-- ================= DASHBOARD ================= -->
-
-<div class="dashboard hidden" id="dashboardSection">
-
-  <div class="welcome-card">
-    <h2 id="welcomeRestaurant">Welcome!</h2>
-    <p id="ownerInfo"></p>
-  </div>
-
-
-  <div class="nav-tabs">
-    <button class="active" onclick="showTab('home', this)">
-      🏠 Dashboard
-    </button>
-
-    <button onclick="showTab('orders', this)">
-      📦 Orders
-    </button>
-
-    <button onclick="showTab('menu', this)">
-      🍔 Menu
-    </button>
-  </div>
-
-
-  <!-- ================= HOME ================= -->
-
-  <div id="homeTab" class="tab-content">
-
-    <div class="stats-grid">
-      <div class="stat-card">
-        <span>📦 Total Orders</span>
-        <strong id="totalOrders">0</strong>
-      </div>
-
-      <div class="stat-card">
-        <span>⏳ Pending</span>
-        <strong id="pendingOrders">0</strong>
-      </div>
-
-      <div class="stat-card">
-        <span>👨‍🍳 Preparing</span>
-        <strong id="preparingOrders">0</strong>
-      </div>
-
-      <div class="stat-card">
-        <span>✅ Ready</span>
-        <strong id="readyOrders">0</strong>
-      </div>
-    </div>
-
-    <div class="welcome-card" style="margin-top:15px;">
-      <h3>🚀 Restaurant Dashboard</h3>
-      <p>Manage your customer orders and menu from one place.</p>
-
-      <button onclick="refreshDashboard()">
-        🔄 Refresh Dashboard
-      </button>
-    </div>
-
-  </div>
-
-
-  <!-- ================= ORDERS ================= -->
-
-  <div id="ordersTab" class="tab-content hidden">
-
-    <div class="welcome-card">
-      <h3>📦 Customer Orders</h3>
-
-      <button class="refresh-btn" onclick="loadOrders()">
-        🔄 Refresh Orders
-      </button>
-
-      <div id="ordersList">
-        Loading orders...
-      </div>
-    </div>
-
-  </div>
-
-
-  <!-- ================= MENU ================= -->
-
-  <div id="menuTab" class="tab-content hidden">
-
-    <div class="welcome-card">
-      <h3>➕ Add Menu Item</h3>
-
-      <input type="text" id="menuName"
-        placeholder="Food Item Name">
-
-      <textarea id="menuDescription"
-        placeholder="Description (optional)"></textarea>
-
-      <input type="number" id="menuPrice"
-        placeholder="Price (₹)" min="0" step="0.01">
-
-      <input type="text" id="menuCategory"
-        placeholder="Category (Example: Snacks, Main Course)">
-
-      <button onclick="addMenuItem()">
-        ➕ Add to Menu
-      </button>
-
-      <div class="message" id="menuMessage"></div>
-    </div>
-
-
-    <div class="welcome-card">
-      <h3>🍽️ Your Menu</h3>
-
-      <div id="adminMenuList">
-        Loading menu...
-      </div>
-    </div>
-
-  </div>
-
-
-  <button class="danger" onclick="logout()">
-    Logout
-  </button>
-
-</div>
-
-
-<!-- ================= SUPABASE ================= -->
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-
-  // =====================================
-  // SUPABASE CONFIG
-  // =====================================
-
-  const SUPABASE_URL =
-    "https://yravmnkdagtafdazguvl.supabase.co";
-
-  const SUPABASE_ANON_KEY =
-    "sb_publishable_EAWWJe0aicdmnT1HQopX_A_nEUkKbyN";
-
-  const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-  );
-
-
-  // =====================================
-  // APP DATA
-  // =====================================
-
-  let currentUser = null;
-  let currentRestaurant = null;
-
-
-  // =====================================
-  // AUTH SCREEN
-  // =====================================
-
-  function showSignup() {
-    document.getElementById("loginCard")
-      .classList.add("hidden");
-
-    document.getElementById("signupCard")
-      .classList.remove("hidden");
-  }
-
-
-  function showLogin() {
-    document.getElementById("signupCard")
-      .classList.add("hidden");
-
-    document.getElementById("loginCard")
-      .classList.remove("hidden");
-  }
-
-
-  // =====================================
-  // SIGNUP
-  // =====================================
-
-  async function signup() {
-
-    const restaurantName =
-      document.getElementById("restaurantName").value.trim();
-
-    const ownerName =
-      document.getElementById("ownerName").value.trim();
-
-    const phone =
-      document.getElementById("phone").value.trim();
-
-    const address =
-      document.getElementById("address").value.trim();
-
-    const email =
-      document.getElementById("signupEmail").value.trim();
-
-    const password =
-      document.getElementById("signupPassword").value;
-
-    const message =
-      document.getElementById("signupMessage");
-
-    if (!restaurantName || !email || !password) {
-      message.textContent =
-        "Please fill Restaurant Name, Email and Password.";
-      return;
-    }
-
-    message.textContent = "Creating account...";
-
-    const { data, error } =
-      await supabaseClient.auth.signUp({
-        email,
-        password
-      });
-
-    if (error) {
-      message.textContent = error.message;
-      return;
-    }
-
-    const user = data.user;
-
-    if (!user) {
-      message.textContent =
-        "Account could not be created.";
-      return;
-    }
-
-    const { error: restaurantError } =
-      await supabaseClient
-        .from("restaurants")
-        .insert({
-          name: restaurantName,
-          owner_id: user.id,
-          owner_name: ownerName,
-          phone,
-          address
-        });
-
-    if (restaurantError) {
-      message.textContent =
-        "Account created, but restaurant profile could not be saved: " +
-        restaurantError.message;
-      return;
-    }
-
-    message.textContent =
-      "Account created successfully! You can now login.";
-
-    setTimeout(showLogin, 2000);
-  }
-
-
-  // =====================================
-  // LOGIN
-  // =====================================
-
-  async function login() {
-
-    const email =
-      document.getElementById("loginEmail").value.trim();
-
-    const password =
-      document.getElementById("loginPassword").value;
-
-    const message =
-      document.getElementById("loginMessage");
-
-    if (!email || !password) {
-      message.textContent =
-        "Please enter email and password.";
-      return;
-    }
-
-    message.textContent = "Logging in...";
-
-    const { data, error } =
-      await supabaseClient.auth.signInWithPassword({
-        email,
-        password
-      });
-
-    if (error) {
-      message.textContent = error.message;
-      return;
-    }
-
-    await loadDashboard(data.user);
-  }
-
-
-  // =====================================
-  // LOAD DASHBOARD
-  // =====================================
-
-  async function loadDashboard(user) {
-
-    currentUser = user;
-
-    const { data: restaurant, error } =
-      await supabaseClient
-        .from("restaurants")
-        .select("*")
-        .eq("owner_id", user.id)
-        .single();
-
-    if (error || !restaurant) {
-      alert("Restaurant profile not found.");
-      return;
-    }
-
-    currentRestaurant = restaurant;
-
-    document.getElementById("authSection")
-      .classList.add("hidden");
-
-    document.getElementById("dashboardSection")
-      .classList.remove("hidden");
-
-    document.getElementById("welcomeRestaurant")
-      .textContent = "Welcome to " + restaurant.name;
-
-    document.getElementById("ownerInfo")
-      .textContent =
-        "Owner: " +
-        (restaurant.owner_name || "Restaurant Owner");
-
-    await refreshDashboard();
-  }
-
-
-  // =====================================
-  // TAB SYSTEM
-  // =====================================
-
-  function showTab(tabName, button) {
-
-    document.querySelectorAll(".tab-content")
-      .forEach(tab =>
-        tab.classList.add("hidden")
-      );
-
-    document.querySelectorAll(".nav-tabs button")
-      .forEach(btn =>
-        btn.classList.remove("active")
-      );
-
-    document.getElementById(tabName + "Tab")
-      .classList.remove("hidden");
-
-    button.classList.add("active");
-
-    if (tabName === "menu") {
-      loadMenuItems();
-    }
-
-    if (tabName === "orders") {
-      loadOrders();
-    }
-
-    if (tabName === "home") {
-      refreshDashboard();
-    }
-  }
-
-
-  // =====================================
-  // DASHBOARD STATS
-  // =====================================
-
-  async function refreshDashboard() {
-
-    if (!currentRestaurant) return;
-
-    const { data, error } =
-      await supabaseClient
-        .from("orders")
-        .select("*")
-        .eq("restaurant_id", currentRestaurant.id);
-
-    if (error) {
-      console.log("Dashboard error:", error);
-      return;
-    }
-
-    const orders = data || [];
-
-    document.getElementById("totalOrders")
-      .textContent = orders.length;
-
-    document.getElementById("pendingOrders")
-      .textContent =
-        orders.filter(order =>
-          (order.status || "pending").toLowerCase() === "pending"
-        ).length;
-
-    document.getElementById("preparingOrders")
-      .textContent =
-        orders.filter(order =>
-          (order.status || "").toLowerCase() === "preparing"
-        ).length;
-
-    document.getElementById("readyOrders")
-      .textContent =
-        orders.filter(order =>
-          (order.status || "").toLowerCase() === "ready"
-        ).length;
-  }
-
-
-  // =====================================
-  // LOAD ORDERS
-  // =====================================
-
-  async function loadOrders() {
-
-    if (!currentRestaurant) return;
-
-    const list =
-      document.getElementById("ordersList");
-
-    list.innerHTML = "Loading orders...";
-
-    const { data: orders, error } =
-      await supabaseClient
-        .from("orders")
-        .select("*")
-        .eq("restaurant_id", currentRestaurant.id)
-        .order("created_at", {
-          ascending: false
-        });
-
-    if (error) {
-      console.log(error);
-      list.innerHTML =
-        "Error loading orders: " +
-        escapeHtml(error.message);
-      return;
-    }
-
-    if (!orders || orders.length === 0) {
-      list.innerHTML =
-        "<p>No customer orders yet.</p>";
-      return;
-    }
-
-    list.innerHTML = "";
-
-    for (const order of orders) {
-
-      const { data: orderItems, error: itemsError } =
-        await supabaseClient
-          .from("order_items")
-          .select("*")
-          .eq("order_id", order.id);
-
-      let itemsHtml =
-        "<div class='order-item'>No item details available.</div>";
-
-      if (!itemsError && orderItems && orderItems.length > 0) {
-
-        itemsHtml = "";
-
-        for (const item of orderItems) {
-
-          let itemName = "Food Item";
-
-          if (item.menu_item_id) {
-
-            const { data: menuItem } =
-              await supabaseClient
-                .from("menu_items")
-                .select("name")
-                .eq("id", item.menu_item_id)
-                .maybeSingle();
-
-            if (menuItem && menuItem.name) {
-              itemName = menuItem.name;
-            }
-          }
-
-          const quantity = item.quantity || 1;
-          const price = Number(item.price || 0);
-
-          itemsHtml += `
-            <div class="order-item">
-              🍔 ${escapeHtml(itemName)}
-              × ${quantity}
-              — ₹${price * quantity}
-            </div>
-          `;
-        }
-      }
-
-      const tableNumber =
-        order.table_number ||
-        order.table ||
-        "Not available";
-
-      const customerName =
-        order.customer_name ||
-        order.name ||
-        "Customer";
-
-      const total =
-        Number(
-          order.total_amount ??
-          order.total ??
-          0
-        );
-
-      const status =
-        (order.status || "pending").toLowerCase();
-
-      let orderDate = "";
-
-      if (order.created_at) {
-        orderDate = new Date(
-          order.created_at
-        ).toLocaleString();
-      }
-
-      list.innerHTML += `
-        <div class="order-card">
-
-          <div class="order-top">
-            <h4>🪑 Table ${escapeHtml(String(tableNumber))}</h4>
-
-            <span class="status-badge">
-              ${escapeHtml(status.toUpperCase())}
-            </span>
-          </div>
-
-          <div class="order-info">
-            👤 Customer: ${escapeHtml(String(customerName))}
-          </div>
-
-          <div class="order-info">
-            🕒 ${escapeHtml(orderDate)}
-          </div>
-
-          <div class="order-items">
-            <strong>🍽️ Order Items</strong>
-            ${itemsHtml}
-          </div>
-
-          <div class="order-total">
-            Total: ₹${total}
-          </div>
-
-          <select
-            class="status-select"
-            onchange="updateOrderStatus('${order.id}', this.value)"
-          >
-            <option value="pending"
-              ${status === "pending" ? "selected" : ""}>
-              ⏳ Pending
-            </option>
-
-            <option value="preparing"
-              ${status === "preparing" ? "selected" : ""}>
-              👨‍🍳 Preparing
-            </option>
-
-            <option value="ready"
-              ${status === "ready" ? "selected" : ""}>
-              ✅ Ready
-            </option>
-
-            <option value="completed"
-              ${status === "completed" ? "selected" : ""}>
-              🎉 Completed
-            </option>
-          </select>
-
-        </div>
-      `;
-    }
-  }
-
-
-  // =====================================
-  // UPDATE ORDER STATUS
-  // =====================================
-
-  async function updateOrderStatus(orderId, newStatus) {
-
-    const { error } =
-      await supabaseClient
-        .from("orders")
-        .update({
-          status: newStatus
-        })
-        .eq("id", orderId)
-        .eq(
-          "restaurant_id",
-          currentRestaurant.id
-        );
-
-    if (error) {
-      alert(
-        "Status update failed: " +
-        error.message
-      );
-      return;
-    }
-
-    await loadOrders();
-    await refreshDashboard();
-  }
-
-
-  // =====================================
-  // ADD MENU ITEM
-  // =====================================
-
-  async function addMenuItem() {
-
-    if (!currentRestaurant) {
-      alert(
-        "Restaurant not loaded. Please login again."
-      );
-      return;
-    }
-
-    const name =
-      document.getElementById("menuName").value.trim();
-
-    const description =
-      document.getElementById("menuDescription").value.trim();
-
-    const price =
-      Number(
-        document.getElementById("menuPrice").value
-      );
-
-    const category =
-      document.getElementById("menuCategory")
-        .value.trim() || "General";
-
-    const message =
-      document.getElementById("menuMessage");
-
-    if (!name || isNaN(price) || price < 0) {
-      message.textContent =
-        "Please enter a valid item name and price.";
-      return;
-    }
-
-    message.textContent = "Adding item...";
-
-    const { error } =
-      await supabaseClient
-        .from("menu_items")
-        .insert({
-          restaurant_id: currentRestaurant.id,
-          name,
-          description,
-          price,
-          category,
-          is_available: true
-        });
-
-    if (error) {
-      console.log(error);
-      message.textContent =
-        "Error: " + error.message;
-      return;
-    }
-
-    message.textContent =
-      "✅ Menu item added successfully!";
-
-    document.getElementById("menuName").value = "";
-    document.getElementById("menuDescription").value = "";
-    document.getElementById("menuPrice").value = "";
-    document.getElementById("menuCategory").value = "";
-
-    await loadMenuItems();
-  }
-
-
-  // =====================================
-  // LOAD MENU ITEMS
-  // =====================================
-
-  async function loadMenuItems() {
-
-    if (!currentRestaurant) return;
-
-    const list =
-      document.getElementById("adminMenuList");
-
-    list.innerHTML = "Loading menu...";
-
-    const { data, error } =
-      await supabaseClient
-        .from("menu_items")
-        .select("*")
-        .eq(
-          "restaurant_id",
-          currentRestaurant.id
-        )
-        .order("created_at", {
-          ascending: false
-        });
-
-    if (error) {
-      list.innerHTML =
-        "Error loading menu: " +
-        escapeHtml(error.message);
-      return;
-    }
-
-    if (!data || data.length === 0) {
-      list.innerHTML =
-        "<p>No menu items yet.</p>";
-      return;
-    }
-
-    list.innerHTML = "";
-
-    data.forEach(item => {
-
-      const statusClass =
-        item.is_available
-          ? "available"
-          : "unavailable";
-
-      const statusText =
-        item.is_available
-          ? "Available"
-          : "Unavailable";
-
-      list.innerHTML += `
-        <div class="menu-item-admin">
-
-          <h4>
-            ${escapeHtml(item.name)}
-          </h4>
-
-          <div class="menu-meta">
-            ${escapeHtml(item.category || "General")}
-            • ₹${item.price}
-          </div>
-
-          <div class="${statusClass}">
-            ${statusText}
-          </div>
-
-          <div class="menu-actions">
-
-            <button onclick="toggleMenuAvailability(
-              '${item.id}',
-              ${item.is_available}
-            )">
-              ${item.is_available
-                ? "Make Unavailable"
-                : "Make Available"}
-            </button>
-
-            <button
-              class="danger"
-              onclick="deleteMenuItem('${item.id}')"
-            >
-              Delete
-            </button>
-
-          </div>
-
-        </div>
-      `;
-    });
-  }
-
-
-  // =====================================
-  // TOGGLE MENU AVAILABILITY
-  // =====================================
-
-  async function toggleMenuAvailability(
-    itemId,
-    currentStatus
-  ) {
-
-    const { error } =
-      await supabaseClient
-        .from("menu_items")
-        .update({
-          is_available: !currentStatus
-        })
-        .eq("id", itemId)
-        .eq(
-          "restaurant_id",
-          currentRestaurant.id
-        );
-
-    if (error) {
-      alert("Error: " + error.message);
-      return;
-    }
-
-    await loadMenuItems();
-  }
-
-
-  // =====================================
-  // DELETE MENU ITEM
-  // =====================================
-
-  async function deleteMenuItem(itemId) {
-
-    const confirmed = confirm(
-      "Are you sure you want to delete this menu item?"
-    );
-
-    if (!confirmed) return;
-
-    const { error } =
-      await supabaseClient
-        .from("menu_items")
-        .delete()
-        .eq("id", itemId)
-        .eq(
-          "restaurant_id",
-          currentRestaurant.id
-        );
-
-    if (error) {
-      alert("Error: " + error.message);
-      return;
-    }
-
-    await loadMenuItems();
-  }
-
-
-  // =====================================
-  // SAFE TEXT DISPLAY
-  // =====================================
-
-  function escapeHtml(text) {
-
-    const div =
-      document.createElement("div");
-
-    div.textContent =
-      text || "";
-
-    return div.innerHTML;
-  }
-
-
-  // =====================================
-  // CHECK SESSION
-  // =====================================
-
-  async function checkSession() {
-
-    const { data } =
-      await supabaseClient.auth.getSession();
-
-    if (data.session) {
-      await loadDashboard(
-        data.session.user
-      );
-    }
-  }
-
-
-  // =====================================
-  // LOGOUT
-  // =====================================
-
-  async function logout() {
-
-    await supabaseClient.auth.signOut();
-
-    currentUser = null;
-    currentRestaurant = null;
-
-    document.getElementById("dashboardSection")
-      .classList.add("hidden");
-
-    document.getElementById("authSection")
-      .classList.remove("hidden");
-  }
-
-
-  // Start App
-  checkSession();
-
+const SUPABASE_URL = "https://yravmnkdagtafdazguvl.supabase.co";
+const SUPABASE_KEY = "sb_publishable_EAWWJe0aicdmnT1HQopX_A_nEUkKbyN";
+const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+let user=null, restaurant=null, currentPage="dashboard";
+let menuCache=[], orderCache=[], tableCache=[];
+
+const $=id=>document.getElementById(id);
+const money=n=>"₹"+Number(n||0).toFixed(2);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const msg=(s)=>alert(s);
+const rid=()=>restaurant?.id;
+
+async function login(){
+ const email=$("email").value.trim(),password=$("password").value;
+ $("loginMsg").textContent="Logging in...";
+ const {data,error}=await db.auth.signInWithPassword({email,password});
+ if(error){$("loginMsg").textContent=error.message;return}
+ user=data.user;
+ await startApp();
+}
+async function logout(){
+ await db.auth.signOut();
+ location.reload();
+}
+async function startApp(){
+ const {data,error}=await db.from("restaurants").select("*").eq("owner_id",user.id).maybeSingle();
+ if(error||!data){
+  $("login").style.display="block";
+  $("loginMsg").textContent=error?.message||"No restaurant found for this account.";
+  $("app").style.display="none";return;
+ }
+ restaurant=data;
+ $("login").style.display="none";
+ $("app").style.display="block";
+ $("restaurantName").textContent=restaurant.name||"Restaurant";
+ await showPage("dashboard",document.querySelector(".sidebar button"));
+}
+async function showPage(page,button){
+ currentPage=page;
+ document.querySelectorAll(".sidebar button").forEach(b=>b.classList.remove("active"));
+ if(button)button.classList.add("active");
+ const names={dashboard:"Dashboard",orders:"Orders",menu:"Menu",tables:"Tables & QR",waiter:"Waiter Calls",complaints:"Complaints",feedback:"Feedback",billing:"Billing",payments:"Payments",offers:"Offers",staff:"Staff Management",analytics:"Analytics",settings:"Settings"};
+ $("pageTitle").textContent=names[page]||page;
+ $("content").innerHTML="Loading...";
+ try{
+  const pages={dashboard:dashboard,orders:orders,menu:menu,tables:tables,waiter:waiter,complaints:complaints,feedback:feedback,billing:billing,payments:payments,offers:offers,staff:staff,analytics:analytics,settings:settings};
+  await pages[page]();
+ }catch(e){$("content").innerHTML=`<div class="notice">Error: ${esc(e.message||e)}</div>`}
+}
+async function refreshPage(){await showPage(currentPage)}
+async function getRows(table,select="*"){
+ const {data,error}=await db.from(table).select(select).eq("restaurant_id",rid()).order("created_at",{ascending:false});
+ if(error)throw error;
+ return data||[];
+}
+function cards(items){
+ return `<div class="cards">${items.map(x=>`<div class="card"><small>${esc(x[0])}</small><h2>${esc(x[1])}</h2></div>`).join("")}</div>`;
+}
+function tableHTML(headers,rows){
+ return `<div class="tablewrap"><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.length?rows.join(""):`<tr><td colspan="${headers.length}">No records found</td></tr>`}</tbody></table></div>`;
+}
+function field(label,id,type="text",value="",placeholder=""){
+ return `<div class="field"><label>${label}</label><input id="${id}" type="${type}" value="${esc(value)}" placeholder="${esc(placeholder)}"></div>`;
+}
+function selectField(label,id,options,value=""){
+ return `<div class="field"><label>${label}</label><select id="${id}">${options.map(o=>`<option value="${esc(o)}" ${o===value?"selected":""}>${esc(o)}</option>`).join("")}</select></div>`;
+}
+async function dashboard(){
+ const ordersData=await getRows("orders");
+ orderCache=ordersData;
+ const today=new Date();today.setHours(0,0,0,0);
+ const todays=ordersData.filter(o=>new Date(o.created_at)>=today);
+ const total=todays.reduce((s,o)=>s+Number(o.total_amount||0),0);
+ const allTotal=ordersData.reduce((s,o)=>s+Number(o.total_amount||0),0);
+ $("content").innerHTML=cards([
+  ["Today's Orders",todays.length],
+  ["Today's Collection",money(total)],
+  ["Total Orders",ordersData.length],
+  ["Total Collection",money(allTotal)]
+ ])+`<div class="panel"><h3>Recent Orders</h3>${tableHTML(["Order","Table","Customer","Amount","Status"],ordersData.slice(0,8).map(o=>`<tr><td>${esc(o.order_number||o.id.slice(0,8))}</td><td>${esc(o.table_number??"-")}</td><td>${esc(o.customer_name||"Customer")}</td><td>${money(o.total_amount)}</td><td><span class="tag">${esc(o.status)}</span></td></tr>`))}</div>`;
+}
+async function orders(){
+ orderCache=await getRows("orders");
+ $("content").innerHTML=`<div class="panel"><h3>All Orders</h3><p class="muted">Update order status and preparation time.</p>${tableHTML(["Order","Table","Customer","Amount","Status","Minutes","Action"],orderCache.map(o=>`<tr>
+ <td>${esc(o.order_number||o.id.slice(0,8))}</td><td>${esc(o.table_number??"-")}</td><td>${esc(o.customer_name||"-")}</td><td>${money(o.total_amount)}</td>
+ <td><select id="st-${o.id}">${["pending","accepted","preparing","ready","completed","cancelled"].map(s=>`<option ${o.status===s?"selected":""}>${s}</option>`).join("")}</select></td>
+ <td><input id="tm-${o.id}" type="number" min="0" value="${Number(o.estimated_time||15)}" style="width:65px;padding:7px"></td>
+ <td><button class="primary" onclick="saveOrder('${o.id}')">Save</button></td></tr>`))}</div>`;
+}
+async function saveOrder(id){
+ const status=$("st-"+id).value,time=Number($("tm-"+id).value||0);
+ const {error}=await db.from("orders").update({status,estimated_time:time,updated_at:new Date().toISOString()}).eq("id",id).eq("restaurant_id",rid());
+ if(error)return msg(error.message);
+ msg("Order updated");await orders();
+}
+async function menu(){
+ menuCache=await getRows("menu_items");
+ $("content").innerHTML=`<div class="panel"><h3>➕ Add Menu Item</h3>
+ <div class="formgrid">${field("Item Name","mname")}${field("Price","mprice","number")}${field("Category","mcat")}${field("Image URL","mimage")}</div>
+ <div class="field"><label>Description</label><textarea id="mdesc"></textarea></div>
+ <button class="primary" onclick="addMenu()">Add Item</button></div>
+ <div class="panel"><h3>Menu Items</h3>${tableHTML(["Item","Category","Price","Available","Action"],menuCache.map(m=>`<tr><td>${esc(m.name)}</td><td>${esc(m.category)}</td><td>${money(m.price)}</td><td>${m.is_available?"Yes":"No"}</td><td class="actions"><button class="secondary" onclick="toggleMenu('${m.id}',${!m.is_available})">${m.is_available?"Disable":"Enable"}</button><button class="danger" onclick="deleteMenu('${m.id}')">Delete</button></td></tr>`))}</div>`;
+}
+async function addMenu(){
+ const name=$("mname").value.trim(),price=Number($("mprice").value);
+ if(!name||!Number.isFinite(price)||price<0)return msg("Enter valid item name and price");
+ const {error}=await db.from("menu_items").insert({restaurant_id:rid(),name,price,category:$("mcat").value,description:$("mdesc").value,image_url:$("mimage").value,is_available:true});
+ if(error)return msg(error.message);
+ msg("Menu item added");await menu();
+}
+async function toggleMenu(id,value){
+ const {error}=await db.from("menu_items").update({is_available:value}).eq("id",id).eq("restaurant_id",rid());
+ if(error)return msg(error.message);await menu();
+}
+async function deleteMenu(id){
+ if(!confirm("Delete this menu item?"))return;
+ const {error}=await db.from("menu_items").delete().eq("id",id).eq("restaurant_id",rid());
+ if(error)return msg(error.message);await menu();
+}
+async function tables(){
+ tableCache=await getRows("restaurant_tables");
+ $("content").innerHTML=`<div class="panel"><h3>Add Table</h3><div class="formgrid">${field("Table Number","tnum","number")}${field("Table Name","tname")}</div><button class="primary" onclick="addTable()">Add Table</button></div>
+ <div class="panel"><h3>Tables & QR Codes</h3>${tableCache.map(t=>{
+  const url=location.origin+location.pathname.replace(/admin\\/?$/,"")+"?restaurant="+rid()+"&table="+t.table_number;
+  const qr="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data="+encodeURIComponent(url);
+  return `<div style="display:inline-block;vertical-align:top;background:#f8fafc;padding:12px;margin:7px;border-radius:10px;width:190px"><b>Table ${t.table_number}</b><p>${esc(t.table_name||"")}</p><img class="qr" src="${qr}" alt="QR Code"><p><button class="secondary" onclick="window.open('${qr}','_blank')">Open QR</button></p><button class="danger" onclick="toggleTable('${t.id}',${!t.is_active})">${t.is_active?"Deactivate":"Activate"}</button></div>`;
+ }).join("")||"No tables added"}</div>`;
+}
+async function addTable(){
+ const num=Number($("tnum").value);
+ if(!Number.isInteger(num)||num<1)return msg("Enter a valid table number");
+ const {error}=await db.from("restaurant_tables").insert({restaurant_id:rid(),table_number:num,table_name:$("tname").value,is_active:true});
+ if(error)return msg(error.message);await tables();
+}
+async function toggleTable(id,value){
+ const {error}=await db.from("restaurant_tables").update({is_active:value}).eq("id",id).eq("restaurant_id",rid());
+ if(error)return msg(error.message);await tables();
+}
+async function waiter(){
+ const rows=await getRows("waiter_calls");
+ $("content").innerHTML=`<div class="panel"><h3>Waiter Calls</h3>${tableHTML(["Table","Message","Time","Status","Action"],rows.map(r=>`<tr><td>${esc(r.table_number??"-")}</td><td>${esc(r.message||"Waiter needed")}</td><td>${new Date(r.created_at).toLocaleString()}</td><td>${esc(r.status)}</td><td><button class="primary" onclick="updateSimple('waiter_calls','${r.id}','completed')">Complete</button></td></tr>`))}</div>`;
+}
+async function complaints(){
+ const rows=await getRows("complaints");
+ $("content").innerHTML=`<div class="panel"><h3>Customer Complaints</h3>${tableHTML(["Customer","Table","Complaint","Status","Reply","Action"],rows.map(r=>`<tr><td>${esc(r.customer_name||"-")}</td><td>${esc(r.table_number??"-")}</td><td>${esc(r.message)}</td><td>${esc(r.status)}</td><td>${esc(r.admin_reply||"-")}</td><td><button class="primary" onclick="replyComplaint('${r.id}')">Reply / Resolve</button></td></tr>`))}</div>`;
+}
+async function replyComplaint(id){
+ const reply=prompt("Enter reply to customer:");
+ if(reply===null)return;
+ const {error}=await db.from("complaints").update({admin_reply:reply,status:"resolved",updated_at:new Date().toISOString()}).eq("id",id).eq("restaurant_id",rid());
+ if(error)return msg(error.message);await complaints();
+}
+async function feedback(){
+ const rows=await getRows("feedback");
+ $("content").innerHTML=`<div class="panel"><h3>Customer Feedback</h3>${tableHTML(["Customer","Rating","Message","Date"],rows.map(r=>`<tr><td>${esc(r.customer_name||"-")}</td><td>${"⭐".repeat(Number(r.rating||0))}</td><td>${esc(r.message||"-")}</td><td>${new Date(r.created_at).toLocaleString()}</td></tr>`))}</div>`;
+}
+async function billing(){
+ const rows=await getRows("orders");
+ const pending=rows.filter(o=>o.bill_status!=="paid");
+ $("content").innerHTML=`<div class="panel"><h3>Billing</h3><p class="muted">Mark bill as generated or paid. Customer bill display requires customer-side integration.</p>${tableHTML(["Order","Table","Total","Bill Status","Payment Status","Action"],pending.map(o=>`<tr><td>${esc(o.order_number||o.id.slice(0,8))}</td><td>${esc(o.table_number??"-")}</td><td>${money(o.total_amount)}</td><td>${esc(o.bill_status||"pending")}</td><td>${esc(o.payment_status||"pending")}</td><td class="actions"><button class="secondary" onclick="setBill('${o.id}','generated')">Generate</button><button class="primary" onclick="setBill('${o.id}','paid')">Mark Paid</button></td></tr>`))}</div>`;
+}
+async function setBill(id,status){
+ const update=status==="paid"?{bill_status:"paid",payment_status:"paid"}:{bill_status:"generated",bill_generated_at:new Date().toISOString()};
+ const {error}=await db.from("orders").update(update).eq("id",id).eq("restaurant_id",rid());
+ if(error)return msg(error.message);await billing();
+}
+async function payments(){
+ const rows=await getRows("orders");
+ $("content").innerHTML=`<div class="panel"><h3>Payments</h3>${tableHTML(["Order","Table","Amount","Payment Status","Method"],rows.map(o=>`<tr><td>${esc(o.order_number||o.id.slice(0,8))}</td><td>${esc(o.table_number??"-")}</td><td>${money(o.total_amount)}</td><td>${esc(o.payment_status||"pending")}</td><td>${esc(o.payment_method||"-")}</td></tr>`))}</div>`;
+}
+async function offers(){
+ const rows=await getRows("offers");
+ $("content").innerHTML=`<div class="panel"><h3>Create Offer</h3><div class="formgrid">${field("Offer Title","otitle")}${field("Coupon Code","ocode")}${selectField("Discount Type","otype",["percentage","fixed"])}${field("Discount Value","ovalue","number")}</div><div class="field"><label>Description</label><textarea id="odesc"></textarea></div><button class="primary" onclick="addOffer()">Create Offer</button></div>
+ <div class="panel"><h3>Offers</h3>${tableHTML(["Title","Coupon","Discount","Active","Action"],rows.map(o=>`<tr><td>${esc(o.title)}</td><td>${esc(o.coupon_code||"-")}</td><td>${esc(o.discount_value)} ${esc(o.discount_type)}</td><td>${o.is_active?"Yes":"No"}</td><td><button class="danger" onclick="deleteRecord('offers','${o.id}')">Delete</button></td></tr>`))}</div>`;
+}
+async function addOffer(){
+ const title=$("otitle").value.trim(),value=Number($("ovalue").value);
+ if(!title||!Number.isFinite(value)||value<0)return msg("Enter valid offer details");
+ const {error}=await db.from("offers").insert({restaurant_id:rid(),title,coupon_code:$("ocode").value,discount_type:$("otype").value,discount_value:value,description:$("odesc").value,is_active:true});
+ if(error)return msg(error.message);await offers();
+}
+async function staff(){
+ const rows=await getRows("staff_members");
+ $("content").innerHTML=`<div class="panel"><h3>Add Staff Member</h3><div class="formgrid">${field("Name","sname")}${field("Phone","sphone","tel")}${selectField("Role","srole",["waiter","manager","kitchen"])}</div><button class="primary" onclick="addStaff()">Add Staff</button></div>
+ <div class="panel"><h3>Staff List</h3>${tableHTML(["Name","Phone","Role","Active","Action"],rows.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.phone||"-")}</td><td>${esc(s.role)}</td><td>${s.is_active?"Yes":"No"}</td><td><button class="danger" onclick="deleteRecord('staff_members','${s.id}')">Delete</button></td></tr>`))}</div>`;
+}
+async function addStaff(){
+ const name=$("sname").value.trim();
+ if(!name)return msg("Enter staff name");
+ const {error}=await db.from("staff_members").insert({restaurant_id:rid(),name,phone:$("sphone").value,role:$("srole").value,is_active:true});
+ if(error)return msg(error.message);await staff();
+}
+async function deleteRecord(table,id){
+ if(!confirm("Delete this record?"))return;
+ const {error}=await db.from(table).delete().eq("id",id).eq("restaurant_id",rid());
+ if(error)return msg(error.message);await refreshPage();
+}
+async function updateSimple(table,id,status){
+ const {error}=await db.from(table).update({status}).eq("id",id).eq("restaurant_id",rid());
+ if(error)return msg(error.message);await refreshPage();
+}
+async function analytics(){
+ const rows=await getRows("orders");
+ const total=rows.reduce((s,o)=>s+Number(o.total_amount||0),0);
+ const completed=rows.filter(o=>o.status==="completed").length;
+ const pending=rows.filter(o=>!["completed","cancelled"].includes(o.status)).length;
+ $("content").innerHTML=cards([["Total Orders",rows.length],["Total Sales",money(total)],["Completed Orders",completed],["Pending Orders",pending]])+`<div class="panel"><h3>Order Status Summary</h3>${tableHTML(["Status","Count"],["pending","accepted","preparing","ready","completed","cancelled"].map(s=>`<tr><td>${s}</td><td>${rows.filter(o=>o.status===s).length}</td></tr>`))}</div>`;
+}
+async function settings(){
+ const r=restaurant;
+ $("content").innerHTML=`<div class="panel"><h3>Restaurant Profile & Settings</h3>
+ <div class="formgrid">
+ ${field("Restaurant Name","rname","text",r.name)}
+ ${field("Owner Name","roname","text",r.owner_name)}
+ ${field("Phone Number","rphone","tel",r.phone)}
+ ${field("Email","remail","email",r.email)}
+ ${field("Address","raddress","text",r.address)}
+ ${field("Logo Image URL","rlogo","text",r.logo_url)}
+ ${field("UPI ID","rupi","text",r.upi_id)}
+ ${field("Payment QR Image URL","rqr","text",r.payment_qr_url)}
+ ${field("Tax Percentage","rtax","number",r.tax_percent??0)}
+ ${field("Service Charge Percentage","rservice","number",r.service_charge_percent??0)}
+ </div>
+ <button class="primary" onclick="saveSettings()">Save Settings</button></div>
+ <div class="panel"><h3>Restaurant Logo Preview</h3>${r.logo_url?`<img src="${esc(r.logo_url)}" style="max-width:130px;max-height:100px">`:"No logo uploaded. Add a public image URL above."}</div>`;
+}
+async function saveSettings(){
+ const tax=Number($("rtax").value||0),service=Number($("rservice").value||0);
+ if(tax<0||service<0)return msg("Tax and service charge cannot be negative");
+ const update={name:$("rname").value,owner_name:$("roname").value,phone:$("rphone").value,email:$("remail").value,address:$("raddress").value,logo_url:$("rlogo").value,upi_id:$("rupi").value,payment_qr_url:$("rqr").value,tax_percent:tax,service_charge_percent:service};
+ const {data,error}=await db.from("restaurants").update(update).eq("id",rid()).select().single();
+ if(error)return msg(error.message);
+ restaurant=data;$("restaurantName").textContent=restaurant.name;
+ msg("Settings saved");await settings();
+}
+
+// Restore existing login session when page opens
+(async()=>{
+ const {data}=await db.auth.getSession();
+ if(data.session){user=data.session.user;await startApp()}
+})();
 </script>
-
 </body>
 </html>
